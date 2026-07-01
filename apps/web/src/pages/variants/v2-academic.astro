@@ -1,0 +1,581 @@
+---
+/**
+ * 变体 V2：MIT Media Lab / 学术网格风
+ * ---
+ * DNA:
+ *  - 严格网格 · 编号系统 (01/02/03)
+ *  - 科技蓝 + 黑白灰单色调
+ *  - 无衬线主字体 · Mono 编号
+ *  - 学术严谨、Editorial 排版
+ *  - 无动画（打印静态感）
+ *
+ * Trace: brand-spec §2.2 单色蓝 · §3 混合字体 · §6 MIT Media Lab
+ */
+---
+<html lang="zh-CN" data-variant="v2-academic">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>V2 · MIT 学术网格 - 光电科技</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --paper: #FFFFFF;
+        --ink: #0A0F14;
+        --ink-2: #2A3540;
+        --ink-3: #6B7785;
+        --line: #1A2028;
+        --line-soft: rgba(10,15,20,0.12);
+        --brand: #0078D8;
+        --brand-tint: #E8F3FD;
+        --highlight: #FFF8B0;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      .mono { font-family: 'JetBrains Mono', monospace; }
+
+      /* Editorial header */
+      header {
+        border-bottom: 2px solid var(--line);
+        position: sticky; top: 0; z-index: 50;
+        background: var(--paper);
+      }
+      nav {
+        max-width: 1280px; margin: 0 auto;
+        padding: 0.75rem 2rem;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 2rem;
+      }
+      .brand-block {
+        display: flex; align-items: center; gap: 0.75rem;
+        text-decoration: none; color: var(--ink);
+      }
+      .brand-block img {
+        width: 32px; height: 32px; border-radius: 50%;
+        border: 1px solid var(--line-soft);
+      }
+      .brand-block-name {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700; font-size: 1rem;
+        letter-spacing: -0.01em;
+      }
+      .brand-block-en {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem; text-transform: uppercase;
+        letter-spacing: 0.15em; color: var(--ink-3);
+      }
+      .nav-issue {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; color: var(--ink-3);
+        letter-spacing: 0.1em; text-align: center;
+      }
+      nav ul {
+        display: flex; gap: 1.5rem; list-style: none; align-items: center;
+      }
+      nav a {
+        text-decoration: none; color: var(--ink);
+        font-size: 0.85rem;
+        border-bottom: 1px solid transparent;
+        padding-bottom: 2px;
+        transition: border-color 0.15s;
+      }
+      nav a:hover { border-bottom-color: var(--brand); }
+      .cta-nav {
+        background: var(--brand); color: white !important;
+        padding: 0.4rem 0.85rem;
+        border: none !important;
+      }
+
+      /* Editorial hero - 报刊头版式 */
+      .hero {
+        max-width: 1280px; margin: 0 auto;
+        padding: 3rem 2rem 5rem;
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 4rem;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .hero-main .issue-line {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        color: var(--brand);
+        text-transform: uppercase;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .hero-main h1 {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700;
+        font-size: clamp(2.5rem, 5.5vw, 4rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        margin-bottom: 2rem;
+      }
+      .hero-main h1 span {
+        background: linear-gradient(180deg, transparent 65%, var(--brand-tint) 65%);
+        padding: 0 0.15em;
+      }
+      .lede {
+        font-family: 'Noto Serif SC', serif;
+        font-size: 1.2rem;
+        line-height: 1.7;
+        color: var(--ink-2);
+        max-width: 42em;
+      }
+      .lede::first-letter {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700;
+        font-size: 4rem;
+        float: left;
+        line-height: 0.9;
+        padding-right: 0.5rem;
+        color: var(--brand);
+      }
+
+      /* 右侧信息卡 */
+      .hero-aside {
+        border-left: 1px solid var(--line-soft);
+        padding-left: 2rem;
+      }
+      .aside-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--ink);
+      }
+      .aside-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed var(--line-soft);
+        font-size: 0.85rem;
+      }
+      .aside-item dt {
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--ink-3);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .aside-item dd { color: var(--ink); }
+
+      /* Stats - 4 列大数字 */
+      .stats {
+        max-width: 1280px; margin: 0 auto;
+        padding: 3rem 2rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .stat-cell {
+        padding: 1.5rem 2rem;
+        border-left: 1px solid var(--line-soft);
+      }
+      .stat-cell:first-child { border-left: none; padding-left: 0; }
+      .stat-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 3rem;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+      }
+      .stat-num sup {
+        font-size: 1rem;
+        color: var(--brand);
+        vertical-align: super;
+      }
+      .stat-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+
+      /* Fields - 编号式排列 */
+      .fields {
+        max-width: 1280px; margin: 0 auto;
+        padding: 6rem 2rem;
+      }
+      .fields-head {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: end;
+        gap: 2rem;
+        margin-bottom: 4rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--line);
+      }
+      .fields-head h2 {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        letter-spacing: -0.02em;
+      }
+      .fields-head .meta {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        color: var(--ink-3);
+        letter-spacing: 0.1em;
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: 80px 240px 1fr auto;
+        gap: 2rem;
+        align-items: baseline;
+        padding: 2rem 0;
+        border-bottom: 1px solid var(--line-soft);
+        transition: background 0.15s;
+      }
+      .field-row:hover {
+        background: linear-gradient(90deg, var(--brand-tint) 0%, transparent 100%);
+      }
+      .field-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 2rem;
+        font-weight: 300;
+        color: var(--brand);
+      }
+      .field-name {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--ink);
+      }
+      .field-desc {
+        color: var(--ink-2);
+        line-height: 1.7;
+        font-size: 0.95rem;
+      }
+      .field-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        color: var(--ink-3);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* Spirit - 大字排版 · 印章感 */
+      .spirit {
+        background: var(--ink);
+        color: var(--paper);
+        padding: 8rem 2rem;
+        position: relative;
+      }
+      .spirit-inner {
+        max-width: 1280px; margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+      }
+      .spirit-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+      }
+      .spirit-title {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+      .spirit-word {
+        color: var(--brand);
+      }
+      .spirit-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+      }
+      .spirit-item {
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.15);
+      }
+      .spirit-item-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        color: var(--brand);
+        letter-spacing: 0.15em;
+        margin-bottom: 0.5rem;
+      }
+      .spirit-item-name {
+        font-family: 'Noto Serif SC', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .spirit-item-desc {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.6);
+        line-height: 1.6;
+      }
+
+      /* CTA - 单行大字 */
+      .cta-section {
+        max-width: 1280px; margin: 0 auto;
+        padding: 6rem 2rem;
+        text-align: center;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .cta-title {
+        font-family: 'Noto Serif SC', serif;
+        font-weight: 700;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        line-height: 1.2;
+        margin-bottom: 2rem;
+      }
+      .cta-btn {
+        display: inline-block;
+        background: var(--brand);
+        color: var(--paper);
+        padding: 1rem 3rem;
+        text-decoration: none;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        transition: background 0.15s;
+      }
+      .cta-btn:hover { background: var(--ink); }
+
+      /* Footer */
+      footer {
+        max-width: 1280px; margin: 0 auto;
+        padding: 4rem 2rem 2rem;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 3rem;
+        font-size: 0.85rem;
+      }
+      footer h4 {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      footer p, footer li { color: var(--ink-2); line-height: 1.75; }
+      footer ul { list-style: none; }
+      footer a { color: inherit; text-decoration: none; }
+      footer a:hover { color: var(--brand); }
+      .colophon {
+        max-width: 1280px; margin: 0 auto;
+        padding: 2rem;
+        border-top: 1px solid var(--line);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        color: var(--ink-3);
+        letter-spacing: 0.05em;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; gap: 3rem; }
+        .hero-aside { border-left: none; padding-left: 0; border-top: 1px solid var(--line-soft); padding-top: 2rem; }
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .stat-cell { border-left: none; border-top: 1px solid var(--line-soft); padding: 1rem; }
+        .field-row { grid-template-columns: auto 1fr; }
+        .field-num { grid-row: span 2; }
+        .field-tag { display: none; }
+        .spirit-inner { grid-template-columns: 1fr; }
+        footer { grid-template-columns: 1fr 1fr; }
+        nav { grid-template-columns: 1fr auto; }
+        .nav-issue { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/" class="brand-block">
+          <img src="/logo.jpg" alt="光电科技 Logo" />
+          <div>
+            <div class="brand-block-name">光电科技</div>
+            <div class="brand-block-en">Photoelectric Technology</div>
+          </div>
+        </a>
+        <div class="nav-issue">VOL. 09 · SINCE 2016 · HPU</div>
+        <ul>
+          <li><a href="/team">团队</a></li>
+          <li><a href="/projects">项目</a></li>
+          <li><a href="/devices">设备</a></li>
+          <li><a href="/items">资产</a></li>
+          <li><a href="/recruit" class="cta-nav">加入我们</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-main">
+        <div class="issue-line">ISSUE 001 · CLUB PROFILE · 2026 EDITION</div>
+        <h1>我们用<span>光</span>与<span>电</span><br />编写未来的可能</h1>
+        <p class="lede">
+          大学生光电科技协会是一支扎根于河南理工大学物理与电子信息学院的创客团体。
+          我们相信，工程之美不在展示柜里，而在一次次的调试、一版版的原型和一场场的答辩中。
+          十年来，协会秉持创新、学习、交流、竞技四大精神，把光的物理与电的逻辑，
+          从课本推进到实验台，从实验台推进到赛场。
+        </p>
+      </div>
+      <aside class="hero-aside">
+        <div class="aside-title">Facts / 协会档案</div>
+        <dl>
+          <div class="aside-item"><dt>Founded</dt><dd>2016 年 · 河南理工大学</dd></div>
+          <div class="aside-item"><dt>Faculty</dt><dd>物理与电子信息学院</dd></div>
+          <div class="aside-item"><dt>Members</dt><dd>80+ 在册活跃成员</dd></div>
+          <div class="aside-item"><dt>Awards</dt><dd>国家级 175 · 省级 182</dd></div>
+          <div class="aside-item"><dt>Fields</dt><dd>光电 · 嵌入式 · 创客</dd></div>
+          <div class="aside-item"><dt>Motto</dt><dd>追随光 · 靠近光 · 成为光 · 发散光</dd></div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="stats">
+      <div class="stat-cell">
+        <div class="stat-num">80<sup>+</sup></div>
+        <div class="stat-label">Active Members</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">175</div>
+        <div class="stat-label">National Awards</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">182</div>
+        <div class="stat-label">Provincial Awards</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">2016</div>
+        <div class="stat-label">Founded Year</div>
+      </div>
+    </section>
+
+    <section class="fields">
+      <div class="fields-head">
+        <h2>研究方向</h2>
+        <div></div>
+        <div class="meta">FIELDS — 03 DOMAINS</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-num">01</div>
+        <div class="field-name">光电技术</div>
+        <div class="field-desc">激光通信 · 光纤传感 · LED 驱动 · 光学测量。以光子作为信息载体，探索能量与数据在电磁波谱上的耦合与传输。</div>
+        <div class="field-tag">PHOTONICS</div>
+      </div>
+      <div class="field-row">
+        <div class="field-num">02</div>
+        <div class="field-name">嵌入式开发</div>
+        <div class="field-desc">单片机 · FPGA · 树莓派 · ESP32 · RTOS。用代码让硬件听话，在物理世界与数字逻辑之间重构可靠的反馈闭环。</div>
+        <div class="field-tag">EMBEDDED</div>
+      </div>
+      <div class="field-row">
+        <div class="field-num">03</div>
+        <div class="field-name">创客实践</div>
+        <div class="field-desc">3D 打印 · 激光雕刻 · PCB 设计 · CAD 建模。从构思到实物的完整路径，让每一个想法都能在协会实验室找到属于它的形态。</div>
+        <div class="field-tag">MAKER</div>
+      </div>
+    </section>
+
+    <section class="spirit">
+      <div class="spirit-inner">
+        <div>
+          <div class="spirit-tag">Manifesto / 协会精神</div>
+          <div class="spirit-title">
+            追随<span class="spirit-word">光</span>，靠近<span class="spirit-word">光</span>，<br />
+            成为<span class="spirit-word">光</span>，发散<span class="spirit-word">光</span>。
+          </div>
+        </div>
+        <div class="spirit-grid">
+          <div class="spirit-item">
+            <div class="spirit-item-num">01 · CORE</div>
+            <div class="spirit-item-name">创新</div>
+            <div class="spirit-item-desc">突破常规，让想法落地为可触摸的实物。</div>
+          </div>
+          <div class="spirit-item">
+            <div class="spirit-item-num">02 · CORE</div>
+            <div class="spirit-item-name">学习</div>
+            <div class="spirit-item-desc">每一行代码、每一个焊点都是成长的脚印。</div>
+          </div>
+          <div class="spirit-item">
+            <div class="spirit-item-num">03 · CORE</div>
+            <div class="spirit-item-name">交流</div>
+            <div class="spirit-item-desc">跨年级、跨专业，知识在碰撞中流动。</div>
+          </div>
+          <div class="spirit-item">
+            <div class="spirit-item-num">04 · CORE</div>
+            <div class="spirit-item-name">竞技</div>
+            <div class="spirit-item-desc">357 项国省奖项，在赛场证明实力。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="cta-title">2026 招新已开启</div>
+      <a href="/recruit" class="cta-btn">提交申请 →</a>
+    </section>
+
+    <footer>
+      <div>
+        <h4>Colophon</h4>
+        <p>河南理工大学大学生光电科技协会官方站点。<br />内容由协会成员编辑维护，版式基于 huashu-design 规范。</p>
+      </div>
+      <div>
+        <h4>Sections</h4>
+        <ul>
+          <li><a href="/team">团队</a></li>
+          <li><a href="/projects">项目</a></li>
+          <li><a href="/devices">设备状态</a></li>
+          <li><a href="/items">协会资产</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">飞书知识库</a></li>
+          <li><a href="#">NAS 共享盘</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li>QQ 群：待填写</li>
+          <li>邮箱：待填写</li>
+        </ul>
+      </div>
+    </footer>
+    <div class="colophon">
+      <span>© 2016—2026 光电科技 · Photoelectric Technology</span>
+      <span>河南理工大学 · 物理与电子信息学院</span>
+      <span>Vol. 09 · Issued Jul. 2026</span>
+    </div>
+  </body>
+</html>

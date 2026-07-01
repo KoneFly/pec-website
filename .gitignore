@@ -1,0 +1,49 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+build/
+.astro/
+.next/
+.output/
+
+# 日志
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# 环境变量（敏感信息禁止入库！）
+.env
+.env.local
+.env.*.local
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Cloudflare Tunnel 凭证
+*.json.tunnel
+cloudflared/
+
+# 临时文件
+tmp/
+temp/
+.cache/
+
+# Spec workflow（个人开发记录，不入库）
+.spec-workflow/
+.playwright-mcp/
+
+# 测试
+coverage/
+.nyc_output/

@@ -1,0 +1,121 @@
+---
+/**
+ * PEC 网站基础布局
+ * - 包含统一的页头、页脚、SEO meta
+ * - 所有页面都应继承自此布局
+ */
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = '大学生光电科技协会 - 光电科技 Photoelectric Technology',
+} = Astro.props;
+
+const fullTitle = title === '光电科技' ? '光电科技 | 大学生光电科技协会' : `${title} | 光电科技`;
+---
+
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a1929" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" />
+
+    <!-- 字体预连接（加速） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+
+    <title>{fullTitle}</title>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-primary-950/80 border-b border-white/5">
+      <nav class="container mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3 group">
+          <img
+            src="/logo.jpg"
+            alt="光电科技 Logo"
+            class="w-10 h-10 rounded-lg object-cover ring-1 ring-white/10"
+            width="40"
+            height="40"
+          />
+          <div class="hidden sm:block">
+            <div class="text-sm font-serif text-slate-100 group-hover:text-neon transition-colors">
+              光电科技
+            </div>
+            <div class="text-xs text-slate-400 font-mono">
+              Photoelectric Technology
+            </div>
+          </div>
+        </a>
+
+        <ul class="flex items-center gap-1 sm:gap-4 text-sm">
+          <li><a href="/" class="px-3 py-2 hover:text-cyan-glow transition-colors">首页</a></li>
+          <li><a href="/team" class="px-3 py-2 hover:text-cyan-glow transition-colors">团队</a></li>
+          <li><a href="/projects" class="px-3 py-2 hover:text-cyan-glow transition-colors">项目</a></li>
+          <li><a href="/devices" class="px-3 py-2 hover:text-cyan-glow transition-colors">设备</a></li>
+          <li><a href="/items" class="px-3 py-2 hover:text-cyan-glow transition-colors">资产</a></li>
+          <li><a href="/recruit" class="px-3 py-2 bg-primary-600 hover:bg-primary-500 rounded-md text-white font-medium transition-colors">招新</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="border-t border-white/5 bg-primary-950/50 mt-20">
+      <div class="container mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-slate-400">
+        <div>
+          <h3 class="font-serif text-slate-100 mb-3">光电科技 · Photoelectric Technology</h3>
+          <p class="leading-relaxed">
+            大学生光电科技协会，致力于嵌入式开发、计算机视觉、机器人操作与创客实践，
+            深耕高水平学科竞赛。
+          </p>
+        </div>
+        <div>
+          <h3 class="font-serif text-slate-100 mb-3">内部资源</h3>
+          <ul class="space-y-2">
+            <li>
+              <a href="#" class="hover:text-cyan-glow">
+                飞书知识库 →
+              </a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-cyan-glow">
+                NAS 共享盘 →
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-serif text-slate-100 mb-3">联系我们</h3>
+          <ul class="space-y-2">
+            <li>QQ 群: <span class="font-mono text-slate-300">待填写</span></li>
+            <li>邮箱: <span class="font-mono text-slate-300">待填写</span></li>
+            <li>地址: <span class="text-slate-300">协会活动室</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/5 py-4 text-center text-xs text-slate-500 font-mono">
+        © 2016—2026 光电科技 · Made with 💙 by club members<br/>
+        <span class="text-[10px]">大学生光电科技协会 · Photoelectric Technology</span>
+      </div>
+    </footer>
+  </body>
+</html>

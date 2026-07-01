@@ -1,0 +1,66 @@
+# =============================================
+# PEC 协会网站 - 群晖部署 Compose 配置
+# 用法：
+#   docker compose up -d         # 启动
+#   docker compose logs -f       # 看日志
+#   docker compose down          # 停止
+# =============================================
+
+services:
+  # ---------- 后端 API ----------
+  api:
+    container_name: pec-api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - apps/api/.env
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/apps/api/data/pec.db
+    volumes:
+      - ./data:/app/apps/api/data
+    networks:
+      - pec-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ---------- 拓竹 MQTT 采集器（Phase 2 启用） ----------
+  # bambu-collector:
+  #   container_name: pec-bambu
+  #   build:
+  #     context: .
+  #     dockerfile: collectors/bambu-mqtt/Dockerfile
+  #   restart: unless-stopped
+  #   env_file:
+  #     - apps/api/.env
+  #   environment:
+  #     - API_URL=http://api:3000
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   networks:
+  #     - pec-net
+
+  # ---------- Cloudflare Tunnel（穿透到外网） ----------
+  # 配置好 Tunnel 后取消注释。CLOUDFLARE_TUNNEL_TOKEN 在 .env 中配置。
+  # cloudflared:
+  #   container_name: pec-tunnel
+  #   image: cloudflare/cloudflared:latest
+  #   restart: unless-stopped
+  #   command: tunnel --no-autoupdate run
+  #   environment:
+  #     - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - pec-net
+
+networks:
+  pec-net:
+    driver: bridge

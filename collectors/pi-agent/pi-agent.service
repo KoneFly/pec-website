@@ -1,0 +1,11 @@
+[Unit]
+Description=PEC Raspberry Pi Heartbeat Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/profile.d/pec-agent.sh
+ExecStart=/usr/local/bin/pi-agent.sh
+StandardOutput=journal
+StandardError=journal

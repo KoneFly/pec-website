@@ -1,0 +1,11 @@
+[Unit]
+Description=PEC Raspberry Pi Heartbeat Timer (every 30s)
+Requires=pi-agent.service
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+Unit=pi-agent.service
+
+[Install]
+WantedBy=timers.target

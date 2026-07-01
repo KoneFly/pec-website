@@ -1,0 +1,632 @@
+---
+/**
+ * 变体 V3：Stripe / Vercel 现代科技风
+ * ---
+ * DNA:
+ *  - 白底 + 微妙 CSS 渐变（不是硬霓虹）
+ *  - 大字标题 + 语义化 SVG（不用 emoji）
+ *  - 明度对比驱动层级（不用颜色驱动）
+ *  - 轻量 IntersectionObserver 淡入（无粒子、无 WebGL）
+ *  - 移动优先响应式
+ *
+ * Trace: brand-spec §6 Stripe.com Home 参照 · §5 允许 fade-up + 数字滚动
+ */
+---
+<html lang="zh-CN" data-variant="v3-stripe">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>V3 · Stripe/Vercel 现代科技 - 光电科技</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --bg-soft: #F5F7FA;
+        --ink: #0A2540;
+        --ink-2: #425466;
+        --ink-3: #8898AA;
+        --brand: #0078D8;
+        --brand-2: #00B8E0;
+        --brand-deep: #1878C0;
+        --line: rgba(10,37,64,0.08);
+        --tint: rgba(0,120,216,0.06);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.5;
+      }
+
+      /* Header - 极简 · 透明 · sticky */
+      header {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: saturate(180%) blur(20px);
+        border-bottom: 1px solid var(--line);
+      }
+      nav {
+        max-width: 1200px; margin: 0 auto;
+        padding: 1rem 1.5rem;
+        display: flex; align-items: center; justify-content: space-between;
+      }
+      .brand-lockup {
+        display: flex; align-items: center; gap: 0.75rem;
+        text-decoration: none; color: var(--ink);
+      }
+      .brand-lockup img {
+        width: 36px; height: 36px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,120,216,0.15);
+      }
+      .brand-lockup-text {
+        display: flex; flex-direction: column; gap: 0;
+      }
+      .brand-cn {
+        font-weight: 700; font-size: 0.95rem;
+        letter-spacing: -0.01em;
+      }
+      .brand-en {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        color: var(--ink-3);
+        letter-spacing: 0.05em;
+      }
+      nav ul {
+        display: flex; gap: 0.25rem; list-style: none; align-items: center;
+      }
+      nav ul a {
+        text-decoration: none; color: var(--ink-2);
+        font-size: 0.9rem; font-weight: 500;
+        padding: 0.5rem 0.85rem;
+        border-radius: 6px;
+        transition: all 0.15s;
+      }
+      nav ul a:hover { color: var(--ink); background: var(--tint); }
+      .cta-nav {
+        background: var(--ink) !important;
+        color: white !important;
+      }
+      .cta-nav:hover { background: var(--brand) !important; }
+
+      /* Hero */
+      .hero {
+        position: relative;
+        padding: 6rem 1.5rem 8rem;
+        overflow: hidden;
+      }
+      /* Stripe 招牌渐变波纹（纯 CSS） */
+      .hero::before {
+        content: ''; position: absolute; inset: 0;
+        background:
+          radial-gradient(ellipse 1200px 600px at 20% -20%, rgba(0,120,216,0.15), transparent 50%),
+          radial-gradient(ellipse 1000px 500px at 80% -10%, rgba(0,184,224,0.12), transparent 50%),
+          linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 60%);
+        pointer-events: none;
+      }
+      .hero-inner {
+        max-width: 1200px; margin: 0 auto;
+        position: relative;
+      }
+      .hero-badge {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.4rem 0.85rem;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.8rem;
+        color: var(--ink-2);
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 12px rgba(0,120,216,0.06);
+      }
+      .hero-badge-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--brand);
+        box-shadow: 0 0 8px var(--brand);
+      }
+      h1 {
+        font-weight: 700;
+        font-size: clamp(2.75rem, 6.5vw, 5rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.75rem;
+        max-width: 900px;
+      }
+      h1 .gradient-word {
+        background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero-sub {
+        font-size: 1.25rem;
+        color: var(--ink-2);
+        max-width: 650px;
+        line-height: 1.65;
+        margin-bottom: 2.5rem;
+      }
+      .hero-actions {
+        display: flex; gap: 1rem; flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.85rem 1.75rem;
+        border-radius: 999px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: var(--ink); color: white;
+      }
+      .btn-primary:hover {
+        background: var(--brand);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0,120,216,0.25);
+      }
+      .btn-outline {
+        background: white; color: var(--ink);
+        border: 1px solid var(--line);
+      }
+      .btn-outline:hover { border-color: var(--brand); color: var(--brand); }
+
+      /* Stats - 卡片行 */
+      .stats {
+        max-width: 1200px; margin: 0 auto;
+        padding: 3rem 1.5rem 6rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+      .stat-card {
+        padding: 2rem 1.5rem;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        transition: all 0.2s;
+      }
+      .stat-card:hover {
+        border-color: var(--brand);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,120,216,0.1);
+      }
+      .stat-num {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+      }
+      .stat-num sup {
+        font-size: 1.25rem;
+        color: var(--brand);
+        vertical-align: super;
+        margin-left: 0.15rem;
+      }
+      .stat-label {
+        font-size: 0.85rem;
+        color: var(--ink-3);
+        font-weight: 500;
+      }
+
+      /* Fields */
+      .fields {
+        background: var(--bg-soft);
+        padding: 6rem 1.5rem;
+      }
+      .fields-inner { max-width: 1200px; margin: 0 auto; }
+      .section-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--brand);
+        margin-bottom: 1rem;
+      }
+      .section-title {
+        font-weight: 700;
+        font-size: clamp(2rem, 4vw, 3rem);
+        letter-spacing: -0.02em;
+        margin-bottom: 3rem;
+        max-width: 700px;
+      }
+      .fields-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+      }
+      .field-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        transition: all 0.25s;
+        position: relative;
+      }
+      .field-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 30px 60px rgba(10,37,64,0.08);
+        border-color: transparent;
+      }
+      .field-icon {
+        width: 44px; height: 44px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--tint);
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        color: var(--brand);
+      }
+      .field-icon svg { width: 24px; height: 24px; }
+      .field-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.01em;
+      }
+      .field-desc {
+        color: var(--ink-2);
+        line-height: 1.7;
+        font-size: 0.95rem;
+      }
+      .field-link {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        margin-top: 1.5rem;
+        color: var(--brand);
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+      }
+      .field-link:hover { gap: 0.6rem; }
+
+      /* Spirit - 数据可视化式 */
+      .spirit {
+        padding: 8rem 1.5rem;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+      }
+      .spirit-inner {
+        max-width: 1000px; margin: 0 auto;
+        text-align: center;
+      }
+      .spirit-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        margin-bottom: 4rem;
+      }
+      .spirit-title .em {
+        background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        -webkit-background-clip: text; background-clip: text;
+        color: transparent;
+      }
+      .spirit-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+      .spirit-card {
+        padding: 2rem 1rem;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        transition: all 0.2s;
+      }
+      .spirit-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--brand);
+      }
+      .spirit-word {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--brand);
+        margin-bottom: 0.5rem;
+        line-height: 1;
+      }
+      .spirit-sub {
+        font-size: 0.85rem;
+        color: var(--ink-3);
+      }
+
+      /* CTA */
+      .final-cta {
+        padding: 8rem 1.5rem;
+        text-align: center;
+        background: var(--ink);
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+      .final-cta::before {
+        content: ''; position: absolute; inset: 0;
+        background: radial-gradient(circle at 50% 100%, rgba(0,120,216,0.4), transparent 60%);
+      }
+      .final-cta-inner {
+        max-width: 800px; margin: 0 auto;
+        position: relative;
+      }
+      .final-cta h2 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+        line-height: 1.15;
+      }
+      .final-cta p {
+        color: rgba(255,255,255,0.7);
+        font-size: 1.15rem;
+        margin-bottom: 2.5rem;
+      }
+      .final-cta .btn-primary {
+        background: white; color: var(--ink);
+      }
+      .final-cta .btn-primary:hover {
+        background: var(--brand); color: white;
+      }
+
+      /* Footer */
+      footer {
+        max-width: 1200px; margin: 0 auto;
+        padding: 4rem 1.5rem 2rem;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 3rem;
+      }
+      footer h4 {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+        color: var(--ink);
+      }
+      footer p, footer li {
+        font-size: 0.875rem;
+        color: var(--ink-2);
+        line-height: 1.9;
+      }
+      footer ul { list-style: none; }
+      footer a { color: inherit; text-decoration: none; }
+      footer a:hover { color: var(--brand); }
+      .copyright {
+        max-width: 1200px; margin: 0 auto;
+        padding: 2rem 1.5rem;
+        border-top: 1px solid var(--line);
+        font-size: 0.8rem;
+        color: var(--ink-3);
+        text-align: center;
+      }
+
+      /* Fade-up 动画 · IntersectionObserver 驱动 */
+      .fade-up {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .fade-up.in {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 900px) {
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .fields-grid { grid-template-columns: 1fr; }
+        .spirit-cards { grid-template-columns: repeat(2, 1fr); }
+        footer { grid-template-columns: 1fr 1fr; }
+        nav ul { gap: 0; }
+        nav ul a { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/" class="brand-lockup">
+          <img src="/logo.jpg" alt="光电科技 Logo" />
+          <div class="brand-lockup-text">
+            <span class="brand-cn">光电科技</span>
+            <span class="brand-en">Photoelectric Technology</span>
+          </div>
+        </a>
+        <ul>
+          <li><a href="/team">团队</a></li>
+          <li><a href="/projects">项目</a></li>
+          <li><a href="/devices">设备</a></li>
+          <li><a href="/items">资产</a></li>
+          <li><a href="/recruit" class="cta-nav">加入我们 →</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          EST. 2016 · 河南理工大学 · 80+ 成员
+        </div>
+        <h1 class="fade-up">
+          我们用<span class="gradient-word">光</span>与<span class="gradient-word">电</span><br />
+          编写未来的可能
+        </h1>
+        <p class="hero-sub fade-up">
+          大学生光电科技协会 · Photoelectric Technology。
+          扎根河南理工大学物理与电子信息学院，用创新、学习、交流、竞技四大精神，
+          孕育下一代硬件工程师。
+        </p>
+        <div class="hero-actions fade-up">
+          <a href="/recruit" class="btn btn-primary">加入我们 →</a>
+          <a href="/projects" class="btn btn-outline">查看项目</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="stat-card fade-up">
+        <div class="stat-num" data-count="80">0<sup>+</sup></div>
+        <div class="stat-label">活跃成员</div>
+      </div>
+      <div class="stat-card fade-up">
+        <div class="stat-num" data-count="175">0</div>
+        <div class="stat-label">国家级奖项</div>
+      </div>
+      <div class="stat-card fade-up">
+        <div class="stat-num" data-count="182">0</div>
+        <div class="stat-label">省级奖项</div>
+      </div>
+      <div class="stat-card fade-up">
+        <div class="stat-num">2016</div>
+        <div class="stat-label">创立年份</div>
+      </div>
+    </div>
+
+    <section class="fields">
+      <div class="fields-inner">
+        <div class="section-eyebrow fade-up">RESEARCH FIELDS · 03</div>
+        <h2 class="section-title fade-up">硬核技术方向，跨学科的融合实践</h2>
+
+        <div class="fields-grid">
+          <div class="field-card fade-up">
+            <div class="field-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+              </svg>
+            </div>
+            <div class="field-title">光电技术</div>
+            <div class="field-desc">激光通信、光纤传感、LED 驱动、光学测量。把光当成数据的载体，探索能量在光子层面的耦合与传输。</div>
+            <a href="#" class="field-link">了解更多 →</a>
+          </div>
+          <div class="field-card fade-up">
+            <div class="field-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
+              </svg>
+            </div>
+            <div class="field-title">嵌入式开发</div>
+            <div class="field-desc">单片机、FPGA、树莓派、ESP32。用一行行代码让硬件听话，在物理世界与数字逻辑之间构建反馈闭环。</div>
+            <a href="#" class="field-link">了解更多 →</a>
+          </div>
+          <div class="field-card fade-up">
+            <div class="field-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="field-title">创客实践</div>
+            <div class="field-desc">3D 打印、激光雕刻、PCB 设计、CAD 建模。从构思到实物的完整路径，让每个想法找到属于它的形态。</div>
+            <a href="#" class="field-link">了解更多 →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="spirit">
+      <div class="spirit-inner">
+        <div class="section-eyebrow fade-up">MANIFESTO · 协会精神</div>
+        <h2 class="spirit-title fade-up">
+          追随<span class="em">光</span>，靠近<span class="em">光</span>，<br />
+          成为<span class="em">光</span>，发散<span class="em">光</span>。
+        </h2>
+        <div class="spirit-cards">
+          <div class="spirit-card fade-up">
+            <div class="spirit-word">创新</div>
+            <div class="spirit-sub">Innovation</div>
+          </div>
+          <div class="spirit-card fade-up">
+            <div class="spirit-word">学习</div>
+            <div class="spirit-sub">Learning</div>
+          </div>
+          <div class="spirit-card fade-up">
+            <div class="spirit-word">交流</div>
+            <div class="spirit-sub">Exchange</div>
+          </div>
+          <div class="spirit-card fade-up">
+            <div class="spirit-word">竞技</div>
+            <div class="spirit-sub">Competition</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div class="final-cta-inner">
+        <h2 class="fade-up">来，一起搞点酷东西</h2>
+        <p class="fade-up">无论你是想学嵌入式的新生，还是能手撕电路图的大佬，都欢迎加入我们。</p>
+        <a href="/recruit" class="btn btn-primary fade-up">立即报名 →</a>
+      </div>
+    </section>
+
+    <footer>
+      <div>
+        <h4>光电科技</h4>
+        <p>河南理工大学大学生光电科技协会。<br />依托物理与电子信息学院，致力于光电技术、嵌入式开发、创客实践与科技竞赛。</p>
+      </div>
+      <div>
+        <h4>导航</h4>
+        <ul>
+          <li><a href="/team">团队</a></li>
+          <li><a href="/projects">项目</a></li>
+          <li><a href="/devices">设备状态</a></li>
+          <li><a href="/items">协会资产</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>资源</h4>
+        <ul>
+          <li><a href="#">飞书知识库</a></li>
+          <li><a href="#">NAS 共享盘</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>联系</h4>
+        <ul>
+          <li>QQ 群：待填写</li>
+          <li>邮箱：待填写</li>
+        </ul>
+      </div>
+    </footer>
+    <div class="copyright">
+      © 2016—2026 光电科技 · Photoelectric Technology · 河南理工大学物理与电子信息学院
+    </div>
+
+    <script>
+      // Fade-up 入场动画
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.fade-up').forEach((el) => io.observe(el));
+
+      // 数字滚动动画
+      const countIO = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          const el = e.target;
+          const target = parseInt(el.dataset.count, 10);
+          if (!target) return;
+          const suffix = el.textContent.match(/\D+$/)?.[0] || '';
+          const duration = 1200;
+          const start = performance.now();
+          function tick(now) {
+            const p = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.floor(target * eased) + suffix;
+            if (p < 1) requestAnimationFrame(tick);
+            else el.textContent = target + suffix;
+          }
+          requestAnimationFrame(tick);
+          countIO.unobserve(el);
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('[data-count]').forEach((el) => countIO.observe(el));
+    </script>
+  </body>
+</html>

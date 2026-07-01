@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+ * PEC 全局样式 - 赛博朋克 + 学术融合
+ * ============================================ */
+
+@layer base {
+  :root {
+    /* 主题变量，方便后续主题切换 */
+    --color-bg: 10 25 41; /* 深空蓝 */
+    --color-bg-elevated: 17 34 55;
+    --color-text: 230 235 245;
+    --color-text-muted: 148 163 184;
+    --color-border: 51 65 85;
+  }
+
+  html {
+    /* 默认暗色，呼应赛博朋克风格 */
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-primary-950 text-slate-100 font-sans antialiased;
+    background-image:
+      /* 微弱的网格背景，呼应电路板 */
+      linear-gradient(rgba(94, 114, 228, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(94, 114, 228, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* 学术风：标题使用衬线字体 */
+  h1, h2, h3 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+@layer components {
+  /* 霓虹文字效果 */
+  .text-neon {
+    @apply text-cyan-glow;
+    text-shadow:
+      0 0 10px currentColor,
+      0 0 20px currentColor,
+      0 0 40px rgba(34, 211, 238, 0.5);
+  }
+
+  /* 玻璃拟态卡片 */
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl;
+    box-shadow:
+      0 4px 24px rgba(94, 114, 228, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* 设备状态点 */
+  .status-dot {
+    @apply inline-block w-2.5 h-2.5 rounded-full animate-pulse-glow;
+  }
+  .status-dot--online   { @apply bg-emerald-400 text-emerald-400; }
+  .status-dot--busy     { @apply bg-amber-400 text-amber-400; }
+  .status-dot--offline  { @apply bg-rose-500 text-rose-500; }
+  .status-dot--idle     { @apply bg-sky-400 text-sky-400; }
+}
+
+@layer utilities {
+  /* 数据高亮（用于关键数字） */
+  .text-data {
+    @apply font-mono text-cyan-glow;
+  }
+}

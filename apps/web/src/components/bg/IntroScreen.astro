@@ -1,0 +1,311 @@
+---
+/**
+ * 开屏动画 · Intro Screen
+ * ---
+ * 严格照抄 参考资源/背景提示词.txt (BackgroundPaths) 的核心机制：
+ *   - 36 条 SVG 斜穿贝塞尔曲线（左上 → 右下）
+ *   - 每条 pathLength/pathOffset 循环流动
+ *   - 中央大字逐字符入场（type: spring）
+ *   - 单个 CTA 按钮 · 玻璃拟态
+ *
+ * 播放完毕后淡出 → 显示主页
+ * sessionStorage 记住已看过，避免每次刷新都重播
+ */
+
+interface Props {
+  title?: string;
+  duration?: number; // 播放时长（毫秒）
+}
+const { title = '光电科技', duration = 4200 } = Astro.props;
+
+// 前端渲染 36 条 path · 与背景提示词.txt 公式完全一致
+const positions = [1, -1] as const;
+const pathsData = positions.flatMap((position) =>
+  Array.from({ length: 36 }, (_, i) => ({
+    id: `${position === 1 ? 'a' : 'b'}${i}`,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    width: 0.5 + i * 0.03,
+    opacity: 0.1 + i * 0.03,
+    duration: 20 + Math.random() * 10,
+  }))
+);
+---
+
+<div id="intro-screen" class="intro" data-duration={duration}>
+  <!-- 两组 SVG · 一正一反 -->
+  <svg class="intro-paths" viewBox="0 0 696 316" fill="none" aria-hidden="true">
+    <title>Background Paths</title>
+    {pathsData.map((p) => (
+      <path
+        d={p.d}
+        stroke="currentColor"
+        stroke-width={p.width}
+        stroke-opacity={p.opacity}
+        fill="none"
+        stroke-linecap="round"
+        pathLength="1"
+        stroke-dasharray="0.5 1"
+        stroke-dashoffset="0"
+        style={`animation: intro-flow ${p.duration}s linear infinite;`}
+      />
+    ))}
+  </svg>
+
+  <!-- 中央大字 -->
+  <div class="intro-content">
+    <h1 class="intro-title">
+      {title.split('').map((ch, i) => (
+        <span class="intro-char" style={`--i: ${i}`}>{ch}</span>
+      ))}
+    </h1>
+    <p class="intro-sub">
+      <span class="intro-sub-inner">Photoelectric Technology</span>
+    </p>
+
+    <!-- 单个 skip 按钮 · 玻璃拟态 -->
+    <button
+      type="button"
+      class="intro-skip"
+      id="intro-skip"
+      aria-label="跳过开屏动画"
+    >
+      <span class="intro-skip-inner">
+        Enter Site
+        <span class="intro-arrow">→</span>
+      </span>
+    </button>
+
+    <!-- 进度条 -->
+    <div class="intro-progress" aria-hidden="true">
+      <div class="intro-progress-fill" id="intro-progress-fill"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: #0F1428;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #BED6F8;
+    /* 淡出时使用 */
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .intro.done {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* 全屏 SVG 铺满 · 保留 viewBox 比例 */
+  .intro-paths {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: #4288C9;
+    pointer-events: none;
+  }
+
+  /* 关键动画：pathOffset 循环推进 → 视觉上是"虚线沿路径流动" */
+  @keyframes intro-flow {
+    from { stroke-dashoffset: 3; stroke-opacity: 0.15; }
+    50%  { stroke-opacity: 0.45; }
+    to   { stroke-dashoffset: 0; stroke-opacity: 0.15; }
+  }
+
+  /* 中央内容 */
+  .intro-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 1.5rem;
+    max-width: 900px;
+  }
+
+  /* 大字标题：逐字符 spring 入场 */
+  .intro-title {
+    font-family: 'Cormorant Garamond', 'Noto Serif SC', serif;
+    font-weight: 500;
+    font-size: clamp(4rem, 12vw, 8rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.5rem;
+    color: #E6ECF5;
+  }
+  .intro-char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(80px);
+    animation: intro-char-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(var(--i) * 0.08s + 0.2s);
+    background: linear-gradient(180deg, #E6ECF5 0%, #87A7F5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 0 0.05em;
+  }
+  @keyframes intro-char-in {
+    from { opacity: 0; transform: translateY(80px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 英文副标 */
+  .intro-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: #87A7F5;
+    margin: 0 0 3rem;
+    opacity: 0;
+    animation: intro-sub-in 1s ease-out forwards;
+    animation-delay: 1.2s;
+  }
+  .intro-sub-inner {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid rgba(135,167,245,0.2);
+    border-bottom: 1px solid rgba(135,167,245,0.2);
+  }
+  @keyframes intro-sub-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Skip 按钮：玻璃拟态 · 边框渐变 */
+  .intro-skip {
+    display: inline-block;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.15) 100%);
+    padding: 1px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(66,136,201,0.2);
+    opacity: 0;
+    animation: intro-cta-in 1s ease-out forwards;
+    animation-delay: 1.8s;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s ease;
+  }
+  .intro-skip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(66,136,201,0.35);
+  }
+  .intro-skip:hover .intro-arrow {
+    transform: translateX(6px);
+  }
+  .intro-skip-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2.25rem;
+    background: rgba(15,20,40,0.95);
+    color: #E6ECF5;
+    border-radius: 999px;
+    font-family: 'Raleway', 'Noto Sans SC', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid rgba(135,167,245,0.1);
+  }
+  .intro-arrow {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #87A7F5;
+    font-size: 1.1em;
+  }
+  @keyframes intro-cta-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 进度条 */
+  .intro-progress {
+    margin-top: 2.5rem;
+    width: 260px;
+    max-width: 80vw;
+    height: 1px;
+    background: rgba(135,167,245,0.15);
+    border-radius: 1px;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0;
+    animation: intro-sub-in 1s ease-out forwards;
+    animation-delay: 1.5s;
+  }
+  .intro-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, transparent, #87A7F5, transparent);
+    box-shadow: 0 0 12px #87A7F5;
+    transition: width 0.1s linear;
+  }
+
+  /* 减动效偏好：立刻跳过整个开屏 */
+  @media (prefers-reduced-motion: reduce) {
+    .intro { display: none; }
+  }
+</style>
+
+<script>
+  // === 开屏动画调度 ===
+  const KEY = 'pec-intro-seen';
+  const intro = document.getElementById('intro-screen');
+  const fill = document.getElementById('intro-progress-fill');
+  const skip = document.getElementById('intro-skip');
+
+  if (!intro || !fill || !skip) {
+    // 组件缺失时无操作
+  } else if (sessionStorage.getItem(KEY) === '1' ||
+             window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // 本次 session 已看过 → 立即隐藏
+    intro.classList.add('done');
+    setTimeout(() => intro.remove(), 0);
+  } else {
+    const totalMs = parseInt(intro.getAttribute('data-duration') || '4200', 10);
+    const startTs = performance.now();
+
+    // 进度条推进
+    let raf = 0;
+    const updateProgress = (now: number) => {
+      const elapsed = now - startTs;
+      const p = Math.min(elapsed / totalMs, 1);
+      fill.style.width = (p * 100).toFixed(1) + '%';
+      if (p < 1) {
+        raf = requestAnimationFrame(updateProgress);
+      } else {
+        finish();
+      }
+    };
+    raf = requestAnimationFrame(updateProgress);
+
+    // 完成 → 淡出
+    function finish() {
+      cancelAnimationFrame(raf);
+      intro!.classList.add('done');
+      sessionStorage.setItem(KEY, '1');
+      // 淡出结束后彻底移除，避免占据 z-index 顶层
+      setTimeout(() => intro!.remove(), 1300);
+    }
+
+    skip.addEventListener('click', finish);
+    // ESC 键也可跳过
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') finish();
+    }, { once: true });
+  }
+</script>

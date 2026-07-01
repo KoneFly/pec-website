@@ -1,0 +1,498 @@
+---
+/**
+ * 电路汇聚背景 · Circuit Flow
+ * ---
+ * 严格遵循 参考资源/cpu代码.txt 的技术机制：
+ *   1. 直角走线（h/v/q，非贝塞尔）
+ *   2. mask + 大圆位移光点（非 animateMotion）
+ *   3. 手工设计的固定路径（非程序生成）
+ *
+ * 中央芯片是丝印风：方形 PCB + 引脚 + 丝印字 + pin 1 标记
+ *
+ * viewBox 1000×1000，中心芯片在 (500,500)，芯片尺寸 200×200
+ */
+---
+
+<div class="circuit-bg" aria-hidden="true">
+  <svg
+    class="circuit-svg"
+    viewBox="0 0 1000 1000"
+    preserveAspectRatio="xMidYMid slice"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <!-- === 光点渐变 === -->
+      <radialGradient id="grad-blue" fx="0.5" fy="0.5">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1" />
+        <stop offset="30%" stop-color="#BED6F8" stop-opacity="0.9" />
+        <stop offset="70%" stop-color="#4288C9" stop-opacity="0.5" />
+        <stop offset="100%" stop-color="#4288C9" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="grad-cyan" fx="0.5" fy="0.5">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1" />
+        <stop offset="30%" stop-color="#A0DEE5" stop-opacity="0.9" />
+        <stop offset="70%" stop-color="#4288C9" stop-opacity="0.4" />
+        <stop offset="100%" stop-color="#4288C9" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="grad-white" fx="0.5" fy="0.5">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1" />
+        <stop offset="50%" stop-color="#BED6F8" stop-opacity="0.6" />
+        <stop offset="100%" stop-color="#BED6F8" stop-opacity="0" />
+      </radialGradient>
+
+      <!-- === 芯片文字渐变（丝印发光感）=== -->
+      <linearGradient id="chip-text-grad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#4288C9">
+          <animate attributeName="offset" values="-1;-0.5;0.5" dur="6s" repeatCount="indefinite" />
+        </stop>
+        <stop offset="25%" stop-color="#BED6F8">
+          <animate attributeName="offset" values="-0.5;0;1" dur="6s" repeatCount="indefinite" />
+        </stop>
+        <stop offset="50%" stop-color="#4288C9">
+          <animate attributeName="offset" values="0;0.5;1.5" dur="6s" repeatCount="indefinite" />
+        </stop>
+      </linearGradient>
+
+      <!-- === PCB 引脚金属渐变 === -->
+      <linearGradient id="pin-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#87A7F5" />
+        <stop offset="100%" stop-color="#3A5587" />
+      </linearGradient>
+
+      <!-- === 芯片阴影 === -->
+      <filter id="chip-shadow" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.5" />
+      </filter>
+      <filter id="chip-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="6" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+
+      <!-- ============================================================
+           核心：20 条直角走线 · 从四周汇聚到中央 400×400 芯片
+           芯片位置: (400,400)~(600,600)，中心 (500,500)
+           编号: 上方 5 条 · 下方 5 条 · 左方 5 条 · 右方 5 条
+           每条 path 都是 M x y + h/v + q (圆角) 的组合
+           ============================================================ -->
+
+      <!-- 上方 5 条：从顶部向下汇聚到芯片上边缘 y=400 -->
+      <path id="line-t1" d="M 200 -20 v 340 q 0 20 20 20 h 200" fill="none" />
+      <path id="line-t2" d="M 400 -20 v 380 q 0 20 20 20 h 60" fill="none" />
+      <path id="line-t3" d="M 600 -20 v 300 q 0 20 -20 20 h -80" fill="none" />
+      <path id="line-t4" d="M 800 -20 v 320 q 0 20 -20 20 h -220" fill="none" />
+      <path id="line-t5" d="M 500 -20 v 420" fill="none" />
+
+      <!-- 下方 5 条：从底部向上汇聚到芯片下边缘 y=600 -->
+      <path id="line-b1" d="M 180 1020 v -340 q 0 -20 20 -20 h 220" fill="none" />
+      <path id="line-b2" d="M 420 1020 v -360 q 0 -20 20 -20 h 60" fill="none" />
+      <path id="line-b3" d="M 580 1020 v -320 q 0 -20 -20 -20 h -40" fill="none" />
+      <path id="line-b4" d="M 820 1020 v -340 q 0 -20 -20 -20 h -220" fill="none" />
+      <path id="line-b5" d="M 500 1020 v -420" fill="none" />
+
+      <!-- 左方 5 条：从左侧向右汇聚到芯片左边缘 x=400 -->
+      <path id="line-l1" d="M -20 200 h 340 q 20 0 20 20 v 200" fill="none" />
+      <path id="line-l2" d="M -20 400 h 380 q 20 0 20 20 v 60" fill="none" />
+      <path id="line-l3" d="M -20 600 h 300 q 20 0 20 -20 v -80" fill="none" />
+      <path id="line-l4" d="M -20 800 h 320 q 20 0 20 -20 v -220" fill="none" />
+      <path id="line-l5" d="M -20 500 h 420" fill="none" />
+
+      <!-- 右方 5 条：从右侧向左汇聚到芯片右边缘 x=600 -->
+      <path id="line-r1" d="M 1020 180 h -340 q -20 0 -20 20 v 220" fill="none" />
+      <path id="line-r2" d="M 1020 420 h -360 q -20 0 -20 20 v 60" fill="none" />
+      <path id="line-r3" d="M 1020 580 h -320 q -20 0 20 -20 v -40" fill="none" />
+      <path id="line-r4" d="M 1020 820 h -340 q -20 0 -20 -20 v -220" fill="none" />
+      <path id="line-r5" d="M 1020 500 h -420" fill="none" />
+
+      <!-- === Mask 定义：每条 mask 是对应 path 的描边形状 === -->
+      <!-- 大圆经过这些描边区域才显示 → 视觉上像"光点顺路径流动" -->
+      <mask id="m-t1"><use href="#line-t1" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-t2"><use href="#line-t2" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-t3"><use href="#line-t3" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-t4"><use href="#line-t4" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-t5"><use href="#line-t5" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-b1"><use href="#line-b1" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-b2"><use href="#line-b2" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-b3"><use href="#line-b3" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-b4"><use href="#line-b4" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-b5"><use href="#line-b5" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-l1"><use href="#line-l1" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-l2"><use href="#line-l2" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-l3"><use href="#line-l3" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-l4"><use href="#line-l4" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-l5"><use href="#line-l5" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-r1"><use href="#line-r1" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-r2"><use href="#line-r2" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-r3"><use href="#line-r3" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-r4"><use href="#line-r4" stroke="white" stroke-width="1" fill="none" /></mask>
+      <mask id="m-r5"><use href="#line-r5" stroke="white" stroke-width="1" fill="none" /></mask>
+    </defs>
+
+    <!-- === 图层 1：静态电路线（暗色底纹）=== -->
+    <g class="circuit-lines"
+       stroke="#4288C9"
+       stroke-width="0.6"
+       stroke-opacity="0.35"
+       fill="none"
+       stroke-linecap="round">
+      <use href="#line-t1" /><use href="#line-t2" /><use href="#line-t3" /><use href="#line-t4" /><use href="#line-t5" />
+      <use href="#line-b1" /><use href="#line-b2" /><use href="#line-b3" /><use href="#line-b4" /><use href="#line-b5" />
+      <use href="#line-l1" /><use href="#line-l2" /><use href="#line-l3" /><use href="#line-l4" /><use href="#line-l5" />
+      <use href="#line-r1" /><use href="#line-r2" /><use href="#line-r3" /><use href="#line-r4" /><use href="#line-r5" />
+    </g>
+
+    <!-- === 图层 2：mask 光点 · JS 手动驱动 cx/cy 属性 === -->
+    <!-- 因为 preview 环境 SMIL 支持不稳，改用 requestAnimationFrame 直接修改属性 -->
+    <!-- data-flow 保存关键帧序列（用 JS 解析），起点即 cx/cy -->
+    <g mask="url(#m-t1)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="200" cy="-20"
+      data-flow="200,-20|200,320|220,340|420,340" data-dur="4.5" data-delay="0"/></g>
+    <g mask="url(#m-t2)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="400" cy="-20"
+      data-flow="400,-20|400,360|420,380|480,380" data-dur="3.8" data-delay="1.2"/></g>
+    <g mask="url(#m-t3)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="600" cy="-20"
+      data-flow="600,-20|600,280|580,300|500,300" data-dur="5.2" data-delay="0.6"/></g>
+    <g mask="url(#m-t4)"><circle class="dot" r="30" fill="url(#grad-white)" cx="800" cy="-20"
+      data-flow="800,-20|800,300|780,320|580,320" data-dur="4.0" data-delay="2.1"/></g>
+    <g mask="url(#m-t5)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="500" cy="-20"
+      data-flow="500,-20|500,400" data-dur="3.5" data-delay="1.5"/></g>
+
+    <g mask="url(#m-b1)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="180" cy="1020"
+      data-flow="180,1020|180,680|200,660|420,660" data-dur="4.8" data-delay="0.8"/></g>
+    <g mask="url(#m-b2)"><circle class="dot" r="30" fill="url(#grad-white)" cx="420" cy="1020"
+      data-flow="420,1020|420,660|440,640|480,640" data-dur="3.6" data-delay="2.4"/></g>
+    <g mask="url(#m-b3)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="580" cy="1020"
+      data-flow="580,1020|580,700|560,680|540,680" data-dur="5.0" data-delay="0.3"/></g>
+    <g mask="url(#m-b4)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="820" cy="1020"
+      data-flow="820,1020|820,680|800,660|580,660" data-dur="4.2" data-delay="1.8"/></g>
+    <g mask="url(#m-b5)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="500" cy="1020"
+      data-flow="500,1020|500,600" data-dur="3.9" data-delay="2.7"/></g>
+
+    <g mask="url(#m-l1)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="-20" cy="200"
+      data-flow="-20,200|320,200|340,220|340,420" data-dur="4.6" data-delay="0.5"/></g>
+    <g mask="url(#m-l2)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="-20" cy="400"
+      data-flow="-20,400|360,400|380,420|380,480" data-dur="5.1" data-delay="1.9"/></g>
+    <g mask="url(#m-l3)"><circle class="dot" r="30" fill="url(#grad-white)" cx="-20" cy="600"
+      data-flow="-20,600|280,600|300,580|300,520" data-dur="3.7" data-delay="0.2"/></g>
+    <g mask="url(#m-l4)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="-20" cy="800"
+      data-flow="-20,800|300,800|320,780|320,580" data-dur="4.9" data-delay="2.5"/></g>
+    <g mask="url(#m-l5)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="-20" cy="500"
+      data-flow="-20,500|400,500" data-dur="4.1" data-delay="1.1"/></g>
+
+    <g mask="url(#m-r1)"><circle class="dot" r="30" fill="url(#grad-white)" cx="1020" cy="180"
+      data-flow="1020,180|680,180|660,200|660,420" data-dur="3.9" data-delay="1.4"/></g>
+    <g mask="url(#m-r2)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="1020" cy="420"
+      data-flow="1020,420|660,420|640,440|640,480" data-dur="4.7" data-delay="0.7"/></g>
+    <g mask="url(#m-r3)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="1020" cy="580"
+      data-flow="1020,580|700,580|680,560|680,540" data-dur="5.3" data-delay="2.2"/></g>
+    <g mask="url(#m-r4)"><circle class="dot" r="30" fill="url(#grad-cyan)" cx="1020" cy="820"
+      data-flow="1020,820|680,820|660,800|660,580" data-dur="3.8" data-delay="1.6"/></g>
+    <g mask="url(#m-r5)"><circle class="dot" r="30" fill="url(#grad-blue)" cx="1020" cy="500"
+      data-flow="1020,500|600,500" data-dur="4.4" data-delay="0.9"/></g>
+
+    <!-- ============================================================
+         图层 3：中央芯片丝印徽章
+         方形 PCB 芯片，外框 400-600 (200×200)
+         ============================================================ -->
+    <g class="chip" filter="url(#chip-shadow)">
+
+      <!-- 4 边 QFP 引脚 (每边 8 个) -->
+      <g fill="url(#pin-grad)">
+        <!-- 上边引脚 -->
+        <rect x="418" y="388" width="6" height="12" rx="1" />
+        <rect x="438" y="388" width="6" height="12" rx="1" />
+        <rect x="458" y="388" width="6" height="12" rx="1" />
+        <rect x="478" y="388" width="6" height="12" rx="1" />
+        <rect x="516" y="388" width="6" height="12" rx="1" />
+        <rect x="536" y="388" width="6" height="12" rx="1" />
+        <rect x="556" y="388" width="6" height="12" rx="1" />
+        <rect x="576" y="388" width="6" height="12" rx="1" />
+        <!-- 下边引脚 -->
+        <rect x="418" y="600" width="6" height="12" rx="1" />
+        <rect x="438" y="600" width="6" height="12" rx="1" />
+        <rect x="458" y="600" width="6" height="12" rx="1" />
+        <rect x="478" y="600" width="6" height="12" rx="1" />
+        <rect x="516" y="600" width="6" height="12" rx="1" />
+        <rect x="536" y="600" width="6" height="12" rx="1" />
+        <rect x="556" y="600" width="6" height="12" rx="1" />
+        <rect x="576" y="600" width="6" height="12" rx="1" />
+        <!-- 左边引脚 -->
+        <rect x="388" y="418" width="12" height="6" rx="1" />
+        <rect x="388" y="438" width="12" height="6" rx="1" />
+        <rect x="388" y="458" width="12" height="6" rx="1" />
+        <rect x="388" y="478" width="12" height="6" rx="1" />
+        <rect x="388" y="516" width="12" height="6" rx="1" />
+        <rect x="388" y="536" width="12" height="6" rx="1" />
+        <rect x="388" y="556" width="12" height="6" rx="1" />
+        <rect x="388" y="576" width="12" height="6" rx="1" />
+        <!-- 右边引脚 -->
+        <rect x="600" y="418" width="12" height="6" rx="1" />
+        <rect x="600" y="438" width="12" height="6" rx="1" />
+        <rect x="600" y="458" width="12" height="6" rx="1" />
+        <rect x="600" y="478" width="12" height="6" rx="1" />
+        <rect x="600" y="516" width="12" height="6" rx="1" />
+        <rect x="600" y="536" width="12" height="6" rx="1" />
+        <rect x="600" y="556" width="12" height="6" rx="1" />
+        <rect x="600" y="576" width="12" height="6" rx="1" />
+      </g>
+
+      <!-- 芯片主体 (方形封装) -->
+      <rect x="400" y="400" width="200" height="200" rx="4"
+            fill="#0F1428"
+            stroke="#3A5587"
+            stroke-width="1" />
+
+      <!-- 内部第二层 die 边框 -->
+      <rect x="420" y="420" width="160" height="160" rx="2"
+            fill="none"
+            stroke="#4288C9"
+            stroke-width="0.5"
+            stroke-opacity="0.4" />
+
+      <!-- Pin 1 标记（左上角圆点，PCB 通用规范） -->
+      <circle cx="412" cy="412" r="3" fill="#87A7F5" opacity="0.9" />
+
+      <!-- 内部 die 抽象方点阵 6×6 -->
+      <g fill="#4288C9" opacity="0.5">
+        <rect x="440" y="440" width="4" height="4" />
+        <rect x="460" y="440" width="4" height="4" />
+        <rect x="480" y="440" width="4" height="4" />
+        <rect x="500" y="440" width="4" height="4" />
+        <rect x="520" y="440" width="4" height="4" />
+        <rect x="540" y="440" width="4" height="4" />
+
+        <rect x="440" y="460" width="4" height="4" />
+        <rect x="460" y="460" width="4" height="4" />
+        <rect x="480" y="460" width="4" height="4" />
+        <rect x="500" y="460" width="4" height="4" />
+        <rect x="520" y="460" width="4" height="4" />
+        <rect x="540" y="460" width="4" height="4" />
+
+        <rect x="440" y="480" width="4" height="4" />
+        <rect x="460" y="480" width="4" height="4" />
+        <rect x="480" y="480" width="4" height="4" />
+        <rect x="500" y="480" width="4" height="4" />
+        <rect x="520" y="480" width="4" height="4" />
+        <rect x="540" y="480" width="4" height="4" />
+
+        <rect x="440" y="540" width="4" height="4" />
+        <rect x="460" y="540" width="4" height="4" />
+        <rect x="480" y="540" width="4" height="4" />
+        <rect x="500" y="540" width="4" height="4" />
+        <rect x="520" y="540" width="4" height="4" />
+        <rect x="540" y="540" width="4" height="4" />
+
+        <rect x="440" y="560" width="4" height="4" />
+        <rect x="460" y="560" width="4" height="4" />
+        <rect x="480" y="560" width="4" height="4" />
+        <rect x="500" y="560" width="4" height="4" />
+        <rect x="520" y="560" width="4" height="4" />
+        <rect x="540" y="560" width="4" height="4" />
+      </g>
+
+      <!-- 中央核心：亮点 + 光晕 (die core) -->
+      <circle cx="500" cy="500" r="12"
+              fill="#4288C9"
+              opacity="0.3"
+              class="core-halo" />
+      <circle cx="500" cy="500" r="6"
+              fill="url(#grad-white)"
+              class="core-dot" />
+
+      <!-- 丝印文字（芯片正面白色印刷字） -->
+      <text x="500" y="502"
+            font-family="'JetBrains Mono', monospace"
+            font-size="10"
+            font-weight="700"
+            fill="url(#chip-text-grad)"
+            text-anchor="middle"
+            letter-spacing="1">PEC</text>
+
+      <!-- 型号丝印（芯片下部小字） -->
+      <text x="500" y="530"
+            font-family="'JetBrains Mono', monospace"
+            font-size="6"
+            fill="#87A7F5"
+            fill-opacity="0.7"
+            text-anchor="middle"
+            letter-spacing="2">OPTOELECTRONIC</text>
+
+      <text x="500" y="545"
+            font-family="'JetBrains Mono', monospace"
+            font-size="5"
+            fill="#4288C9"
+            fill-opacity="0.6"
+            text-anchor="middle"
+            letter-spacing="3">MMXVI · 2016</text>
+
+      <!-- 芯片编号（左上角小丝印） -->
+      <text x="430" y="416"
+            font-family="'JetBrains Mono', monospace"
+            font-size="4"
+            fill="#4288C9"
+            fill-opacity="0.5"
+            letter-spacing="1">TECH-01</text>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .circuit-bg {
+    /* fixed 让背景跟随视口，滚动时芯片始终在屏幕中心 */
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    will-change: transform;
+  }
+  .circuit-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ===============================================
+     光点动画 · CSS transform 位移
+     每个 .dot 有自己的 translate 轨迹关键帧
+     配合 mask 裁剪 → 只在路径描边处显示
+     =============================================== */
+
+  .dot {
+    filter: blur(1px);
+    /* 光点位移由内联 SVG <animate cx/cy> 驱动，浏览器 100% 支持 */
+  }
+
+  /* 芯片核心呼吸 */
+  .core-dot {
+    animation: core-pulse 2.5s ease-in-out infinite;
+    transform-origin: 500px 500px;
+    transform-box: fill-box;
+  }
+  .core-halo {
+    animation: core-halo 2.5s ease-in-out infinite;
+    transform-origin: 500px 500px;
+    transform-box: fill-box;
+  }
+  @keyframes core-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  @keyframes core-halo {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.55; }
+  }
+
+  /* 电路线呼吸 */
+  .circuit-lines {
+    animation: line-breathe 4s ease-in-out infinite;
+  }
+  @keyframes line-breathe {
+    0%, 100% { stroke-opacity: 0.28; }
+    50% { stroke-opacity: 0.42; }
+  }
+
+  /* 尊重减动效偏好 */
+  @media (prefers-reduced-motion: reduce) {
+    .dot { display: none; }
+    .circuit-lines,
+    .core-dot,
+    .core-halo { animation: none; }
+  }
+</style>
+
+<script>
+  // === 光点动画驱动（requestAnimationFrame + setAttribute cx/cy） ===
+  // 每个 .dot 有 data-flow="x1,y1|x2,y2|..." data-dur="4.5" data-delay="0.5"
+  interface Dot {
+    el: SVGCircleElement;
+    points: Array<{ x: number; y: number }>;
+    /** 累计每段长度，用于按弧长匀速 */
+    segLens: number[];
+    totalLen: number;
+    dur: number;    // 秒
+    delay: number;  // 秒
+  }
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dotEls = document.querySelectorAll<SVGCircleElement>('.circuit-svg .dot');
+  const dots: Dot[] = [];
+
+  dotEls.forEach((el) => {
+    const flowStr = el.getAttribute('data-flow');
+    if (!flowStr) return;
+    const points = flowStr.split('|').map(p => {
+      const [x, y] = p.split(',').map(Number);
+      return { x, y };
+    });
+    const segLens: number[] = [];
+    let totalLen = 0;
+    for (let i = 1; i < points.length; i++) {
+      const dx = points[i].x - points[i-1].x;
+      const dy = points[i].y - points[i-1].y;
+      const l = Math.sqrt(dx*dx + dy*dy);
+      segLens.push(l);
+      totalLen += l;
+    }
+    dots.push({
+      el,
+      points,
+      segLens,
+      totalLen,
+      dur: parseFloat(el.getAttribute('data-dur') || '4.5'),
+      delay: parseFloat(el.getAttribute('data-delay') || '0'),
+    });
+  });
+
+  function tick(nowMs: number) {
+    const now = nowMs / 1000;
+    for (const d of dots) {
+      // t ∈ [0, 1) 循环
+      let t = ((now - d.delay) / d.dur) % 1;
+      if (t < 0) t += 1;
+      // 按弧长找位置
+      let target = t * d.totalLen;
+      let seg = 0;
+      while (seg < d.segLens.length && target > d.segLens[seg]) {
+        target -= d.segLens[seg];
+        seg++;
+      }
+      if (seg >= d.segLens.length) seg = d.segLens.length - 1;
+      const p0 = d.points[seg];
+      const p1 = d.points[seg + 1] || p0;
+      const localT = d.segLens[seg] > 0 ? target / d.segLens[seg] : 0;
+      const cx = p0.x + (p1.x - p0.x) * localT;
+      const cy = p0.y + (p1.y - p0.y) * localT;
+      // 直接改 SVG DOM 属性
+      d.el.setAttribute('cx', cx.toFixed(1));
+      d.el.setAttribute('cy', cy.toFixed(1));
+    }
+    if (!stopped) requestAnimationFrame(tick);
+  }
+
+  let stopped = false;
+  if (!reducedMotion && dots.length > 0) {
+    requestAnimationFrame(tick);
+  }
+
+  // === 温和的鼠标视差 ===
+  const bg = document.querySelector<HTMLElement>('.circuit-bg');
+  if (bg && !reducedMotion) {
+    let tx = 0, ty = 0, mcx = 0, mcy = 0;
+    window.addEventListener('mousemove', (e) => {
+      tx = (e.clientX / window.innerWidth - 0.5) * 8;
+      ty = (e.clientY / window.innerHeight - 0.5) * 8;
+    }, { passive: true });
+    function parallax() {
+      mcx += (tx - mcx) * 0.05;
+      mcy += (ty - mcy) * 0.05;
+      bg.style.transform = `translate3d(${mcx}px, ${mcy}px, 0)`;
+      if (!stopped) requestAnimationFrame(parallax);
+    }
+    requestAnimationFrame(parallax);
+  }
+
+  // 页面切换时停止动画（防内存泄漏）
+  document.addEventListener('astro:before-swap', () => { stopped = true; }, { once: true });
+</script>
