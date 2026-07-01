@@ -3,9 +3,12 @@ import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 
 // GitHub Pages 子路径部署：https://konefly.github.io/pec-website/
+// 本地 dev 不加 base 前缀，避免 404；只有 build（生产）时才注入 /pec-website
+const isProd = process.env.NODE_ENV === 'production' || process.argv.includes('build');
+
 export default defineConfig({
   site: 'https://konefly.github.io',
-  base: '/pec-website',
+  base: isProd ? '/pec-website' : '/',
   integrations: [tailwind({ applyBaseStyles: false })],
   server: {
     port: 4321,

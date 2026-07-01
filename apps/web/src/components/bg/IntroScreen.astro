@@ -255,9 +255,10 @@ const pathsData = positions.flatMap((position) =>
     transition: width 0.1s linear;
   }
 
-  /* 减动效偏好：立刻跳过整个开屏 */
+  /* 减动效偏好：字符不做入场跳变，但整体保留（不用 display:none 因为想让 preview 也能看到） */
   @media (prefers-reduced-motion: reduce) {
-    .intro { display: none; }
+    .intro-char { animation: none !important; opacity: 1; transform: none; }
+    .intro-sub, .intro-skip, .intro-progress { animation: none !important; opacity: 1; }
   }
 </style>
 
@@ -269,17 +270,13 @@ const pathsData = positions.flatMap((position) =>
   const skip = document.getElementById('intro-skip');
 
   if (!intro || !fill || !skip) {
-    // 组件缺失时无操作
-  } else if (sessionStorage.getItem(KEY) === '1' ||
-             window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    // 本次 session 已看过 → 立即隐藏
-    intro.classList.add('done');
-    setTimeout(() => intro.remove(), 0);
+    console.warn('[IntroScreen] 组件元素缺失', { intro, fill, skip });
   } else {
+    console.log('[IntroScreen] 开始播放开屏动画');
     const totalMs = parseInt(intro.getAttribute('data-duration') || '4200', 10);
     const startTs = performance.now();
 
-    // 进度条推进
+    // 进度条推进 · 走满后停在 100%，等主人点击才跳
     let raf = 0;
     const updateProgress = (now: number) => {
       const elapsed = now - startTs;
@@ -288,16 +285,19 @@ const pathsData = positions.flatMap((position) =>
       if (p < 1) {
         raf = requestAnimationFrame(updateProgress);
       } else {
-        finish();
+        // 进度走满 → 停止 rAF，但不自动跳转
+        cancelAnimationFrame(raf);
+        // 提示"已就绪"：按钮加高亮 pulse 呼吸
+        skip!.classList.add('ready');
+        console.log('[IntroScreen] 进度已完成，等待主人点击');
       }
     };
     raf = requestAnimationFrame(updateProgress);
 
-    // 完成 → 淡出
+    // 完成 → 淡出（仅由用户交互触发）
     function finish() {
       cancelAnimationFrame(raf);
       intro!.classList.add('done');
-      sessionStorage.setItem(KEY, '1');
       // 淡出结束后彻底移除，避免占据 z-index 顶层
       setTimeout(() => intro!.remove(), 1300);
     }

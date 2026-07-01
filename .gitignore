@@ -44,6 +44,9 @@ temp/
 .spec-workflow/
 .playwright-mcp/
 
+# 参考资源（本地设计参考，不入库）
+参考资源/
+
 # 测试
 coverage/
 .nyc_output/
