@@ -1,6 +1,12 @@
 ---
 import CircuitFlow from '../components/bg/CircuitFlow.astro';
 import IntroScreen from '../components/bg/IntroScreen.astro';
+
+// base URL 处理：dev 时 BASE_URL='/'，prod 时 BASE_URL='/pec-website'（末尾无斜杠）
+// 统一拼成末尾带斜杠，再拼资源路径
+const BASE_RAW = import.meta.env.BASE_URL;
+const BASE = BASE_RAW.endsWith('/') ? BASE_RAW : `${BASE_RAW}/`;
+const logoSrc = `${BASE}logo.jpg`;
 /**
  * 变体 V4：Sui-IB 深蓝夜色氛围版
  * ---
@@ -676,8 +682,8 @@ import IntroScreen from '../components/bg/IntroScreen.astro';
     <!-- Header -->
     <header>
       <nav>
-        <a href="/" class="brand-block">
-          <img src="/logo.jpg" alt="光电科技 Logo" />
+        <a href={BASE} class="brand-block">
+          <img src={logoSrc} alt="光电科技 Logo" />
           <div>
             <div class="brand-cn">光电科技</div>
             <div class="brand-en">Photoelectric Technology</div>
