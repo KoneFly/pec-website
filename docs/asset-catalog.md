@@ -34,6 +34,8 @@ apps/web/
 | [ignoredone 字体库](https://www.ignoredone.space/index.php/fontlab/) | Outfit、Satoshi、MiSans、HarmonyOS Sans、思源宋体、Clash Display 等 | 逐个核验官方许可 |
 | [ignoredone 自制图标包](https://www.ignoredone.space/index.php/iconasset-2/) | 统一线性图标和交互图标参考 | 找到许可声明后再使用 |
 
+当前已采用：Outfit 用于公开页面导航、英文标签和页脚小标题；来源为 [Google Fonts Outfit](https://fonts.google.com/specimen/Outfit)，发布前保留官方许可记录。
+
 ## 4. 明日方舟资源使用规则
 
 可复用 ignoredone 资源库中可下载且许可明确的素材，并满足以下条件：

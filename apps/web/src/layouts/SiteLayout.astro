@@ -28,7 +28,7 @@ const fullTitle = `${title} · 光电科技`;
     <link rel="icon" type="image/svg+xml" href={asset('favicon.svg')} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;500;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;500;600&family=Outfit:wght@300;400;500;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <title>{fullTitle}</title>
   </head>
   <body class="site-shell">
@@ -140,14 +140,14 @@ const fullTitle = `${title} · 光电科技`;
   }
   .site-brand small {
     color: var(--site-muted);
-    font: 0.62rem 'JetBrains Mono', monospace;
+    font: 0.62rem 'Outfit', 'JetBrains Mono', monospace;
     letter-spacing: 0.08em;
   }
   .site-header nav, .site-footer nav { display: flex; align-items: center; gap: 0.35rem; }
   .site-header nav a, .site-footer nav a {
     padding: 0.65rem 0.75rem;
     color: var(--site-muted);
-    font-size: 0.78rem;
+    font: 400 0.78rem 'Outfit', 'Noto Sans SC', sans-serif;
     letter-spacing: 0.08em;
     text-decoration: none;
     transition: color 180ms ease, background 180ms ease;
@@ -171,7 +171,7 @@ const fullTitle = `${title} · 光电科技`;
   .page-index {
     display: block;
     color: var(--site-blue-hi);
-    font: 0.7rem 'JetBrains Mono', monospace;
+    font: 0.7rem 'Outfit', 'JetBrains Mono', sans-serif;
     letter-spacing: 0.2em;
     text-transform: uppercase;
   }
@@ -194,7 +194,7 @@ const fullTitle = `${title} · 光电科技`;
     padding-bottom: 1.25rem;
   }
   .section-heading h2 { margin: 0; font: 500 clamp(1.8rem, 4vw, 3rem) 'Noto Serif SC', serif; }
-  .section-heading p { margin: 0; color: var(--site-faint); font: 0.7rem 'JetBrains Mono', monospace; letter-spacing: 0.15em; }
+  .section-heading p { margin: 0; color: var(--site-faint); font: 0.7rem 'Outfit', 'JetBrains Mono', sans-serif; letter-spacing: 0.15em; }
   .site-footer {
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr;
@@ -208,7 +208,7 @@ const fullTitle = `${title} · 光电科技`;
     line-height: 1.9;
   }
   .site-footer p { margin: 0; }
-  .site-footer-kicker { margin-bottom: 0.9rem !important; color: var(--site-blue-hi); font: 0.65rem 'JetBrains Mono', monospace; letter-spacing: 0.15em; }
+  .site-footer-kicker { margin-bottom: 0.9rem !important; color: var(--site-blue-hi); font: 0.65rem 'Outfit', 'JetBrains Mono', sans-serif; letter-spacing: 0.15em; }
   .site-footer nav { align-items: start; flex-direction: column; gap: 0; }
   .site-footer nav a { padding: 0; }
   .site-footer-bottom { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--site-line); color: var(--site-faint); font: 0.65rem 'JetBrains Mono', monospace; }
