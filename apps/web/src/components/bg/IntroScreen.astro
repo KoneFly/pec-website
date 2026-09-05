@@ -17,6 +17,11 @@ interface Props {
   duration?: number; // 播放时长（毫秒）
 }
 const { title = '光电科技', duration = 4200 } = Astro.props;
+import LogoParticleStage from '../site/LogoParticleStage.astro';
+
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
+const logoSrc = `${base}logo.jpg`;
 
 // 前端渲染 36 条 path · 与背景提示词.txt 公式完全一致
 const positions = [1, -1] as const;
@@ -38,6 +43,7 @@ const pathsData = positions.flatMap((position) =>
 ---
 
 <div id="intro-screen" class="intro" data-duration={duration}>
+  <LogoParticleStage logoSrc={logoSrc} controls={false} autoSequence particleCount={600} />
   <!-- 两组 SVG · 一正一反 -->
   <svg class="intro-paths" viewBox="0 0 696 316" fill="none" aria-hidden="true">
     <title>Background Paths</title>
@@ -109,6 +115,25 @@ const pathsData = positions.flatMap((position) =>
     pointer-events: none;
   }
 
+  /* 点击进入后的视觉交接：流线向中心收束，主页电路在其后接管画面。 */
+  .intro::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(190, 214, 248, 0.28) 0,
+      rgba(66, 136, 201, 0.09) 14%,
+      transparent 38%
+    );
+  }
+  .intro.leaving::after {
+    animation: intro-handoff-flash 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   /* 全屏 SVG 铺满 · 保留 viewBox 比例 */
   .intro-paths {
     position: absolute;
@@ -117,6 +142,16 @@ const pathsData = positions.flatMap((position) =>
     height: 100%;
     color: #4288C9;
     pointer-events: none;
+    transform-origin: 50% 50%;
+    transition:
+      transform 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.8s ease,
+      filter 0.8s ease;
+  }
+  .intro.leaving .intro-paths {
+    transform: scale(0.72);
+    opacity: 0;
+    filter: blur(5px);
   }
 
   /* 关键动画：pathOffset 循环推进 → 视觉上是"虚线沿路径流动" */
@@ -133,6 +168,15 @@ const pathsData = positions.flatMap((position) =>
     text-align: center;
     padding: 0 1.5rem;
     max-width: 900px;
+    transition:
+      opacity 0.5s ease,
+      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.65s ease;
+  }
+  .intro.leaving .intro-content {
+    opacity: 0;
+    transform: scale(0.96);
+    filter: blur(4px);
   }
 
   /* 大字标题：逐字符 spring 入场 */
@@ -232,6 +276,12 @@ const pathsData = positions.flatMap((position) =>
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes intro-handoff-flash {
+    0% { opacity: 0; transform: scale(0.72); }
+    45% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.12); }
+  }
+
   /* 进度条 */
   .intro-progress {
     margin-top: 2.5rem;
@@ -264,7 +314,6 @@ const pathsData = positions.flatMap((position) =>
 
 <script>
   // === 开屏动画调度 ===
-  const KEY = 'pec-intro-seen';
   const intro = document.getElementById('intro-screen');
   const fill = document.getElementById('intro-progress-fill');
   const skip = document.getElementById('intro-skip');
@@ -295,11 +344,20 @@ const pathsData = positions.flatMap((position) =>
     raf = requestAnimationFrame(updateProgress);
 
     // 完成 → 淡出（仅由用户交互触发）
+    let isLeaving = false;
     function finish() {
+      if (isLeaving) return;
+      isLeaving = true;
       cancelAnimationFrame(raf);
-      intro!.classList.add('done');
-      // 淡出结束后彻底移除，避免占据 z-index 顶层
-      setTimeout(() => intro!.remove(), 1300);
+      intro!.classList.add('leaving');
+      window.dispatchEvent(new CustomEvent('pec:intro-exit'));
+
+      // 先完成流线收束，再淡出开屏，主页背景会在同一时间轴内接管。
+      setTimeout(() => intro!.classList.add('done'), 720);
+      setTimeout(() => {
+        intro!.remove();
+        window.dispatchEvent(new CustomEvent('pec:intro-entered'));
+      }, 1500);
     }
 
     skip.addEventListener('click', finish);

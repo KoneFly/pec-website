@@ -1,0 +1,32 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import InfoRow from '../components/site/InfoRow.astro';
+---
+
+<SiteLayout title="资产" description="大学生光电科技协会资产管理说明">
+  <section class="page-hero page-wrap">
+    <span class="page-index">05 / ASSETS</span>
+    <h1>每一件器材，<br /><em>都有去处。</em></h1>
+    <p>公开页面只展示资产管理的范围和原则。具体借用记录、物品留言及内部资料在协会内部渠道维护。</p>
+  </section>
+
+  <section class="page-section page-wrap">
+    <div class="section-heading"><h2>管理范围</h2><p>ASSET PRACTICE</p></div>
+    <div class="info-list">
+      <InfoRow index="01" title="实验设备" english="LAB EQUIPMENT" description="打印设备、嵌入式开发板、视觉采集设备和其他实验器材。" />
+      <InfoRow index="02" title="项目材料" english="PROJECT MATERIALS" description="围绕项目建立的结构件、电子元件、耗材和阶段性样机。" />
+      <InfoRow index="03" title="使用记录" english="USAGE RECORDS" description="借用、归还和维护信息由协会内部成员按实际情况登记。" />
+    </div>
+  </section>
+
+  <section class="page-section asset-note">
+    <div class="page-wrap"><span class="page-index">INTERNAL ACCESS</span><h2>内部资源通过协会内部渠道访问。</h2></div>
+  </section>
+</SiteLayout>
+
+<style>
+  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
+  .info-list { border-top: 1px solid var(--site-line); }
+  .asset-note { background: #131416; }
+  .asset-note h2 { margin: 1rem 0 0; font: 500 clamp(1.6rem, 4vw, 3rem) 'Noto Serif SC', serif; }
+</style>

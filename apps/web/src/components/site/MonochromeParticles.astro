@@ -1,0 +1,134 @@
+---
+interface Props {
+  count?: number;
+}
+
+const { count = 420 } = Astro.props;
+---
+
+<div class="monochrome-field" data-particle-count={count} aria-hidden="true">
+  <canvas></canvas>
+</div>
+
+<style>
+  .monochrome-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.78;
+    mix-blend-mode: screen;
+  }
+  .monochrome-field canvas { display: block; width: 100%; height: 100%; }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('.monochrome-field');
+  const canvas = root?.querySelector<HTMLCanvasElement>('canvas');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (root && canvas && !reducedMotion.matches) {
+    const context = canvas.getContext('2d', { alpha: true });
+    if (context) {
+      let width = 0;
+      let height = 0;
+      let devicePixelRatio = 1;
+      let pointerX = -1000;
+      let pointerY = -1000;
+      let visible = true;
+      let frame = 0;
+      let lastTime = 0;
+
+      // 固定 seed 让每次刷新后的构图稳定，便于视觉验收。
+      let seed = 0x3a7f21;
+      const random = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+
+      type Particle = { x: number; y: number; radius: number; alpha: number; drift: number; phase: number; };
+      let particles: Particle[] = [];
+
+      const resize = () => {
+        const rect = root.getBoundingClientRect();
+        width = Math.max(1, rect.width);
+        height = Math.max(1, rect.height);
+        devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+        canvas.width = Math.floor(width * devicePixelRatio);
+        canvas.height = Math.floor(height * devicePixelRatio);
+        context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+
+        const targetCount = window.innerWidth <= 700 ? 180 : Number(root.dataset.particleCount || 420);
+        root.dataset.activeParticleCount = String(targetCount);
+        seed = 0x3a7f21;
+        particles = Array.from({ length: targetCount }, () => ({
+          x: random() * width,
+          y: random() * height,
+          radius: 0.35 + random() * 1.25,
+          alpha: 0.14 + random() * 0.55,
+          drift: 0.08 + random() * 0.24,
+          phase: random() * Math.PI * 2,
+        }));
+      };
+
+      const paint = (time: number) => {
+        if (!visible) {
+          frame = 0;
+          return;
+        }
+        const elapsed = Math.min(50, time - lastTime || 16.7);
+        lastTime = time;
+        context.clearRect(0, 0, width, height);
+        const seconds = time / 1000;
+
+        for (const particle of particles) {
+          const distanceX = particle.x - pointerX;
+          const distanceY = particle.y - pointerY;
+          const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY) || 1;
+          if (distance < 92) {
+            const force = (92 - distance) / 92;
+            particle.x += (distanceX / distance) * force * 0.32 * elapsed;
+            particle.y += (distanceY / distance) * force * 0.32 * elapsed;
+          }
+
+          particle.y -= particle.drift * elapsed * 0.025;
+          if (particle.y < -4) particle.y = height + 4;
+          const shimmer = 0.72 + Math.sin(seconds * 0.8 + particle.phase) * 0.28;
+          context.fillStyle = `rgba(236, 240, 246, ${particle.alpha * shimmer})`;
+          context.beginPath();
+          context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+          context.fill();
+        }
+        frame = window.requestAnimationFrame(paint);
+      };
+
+      const observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        root.dataset.renderState = visible ? 'running' : 'paused';
+        if (visible && !frame) frame = window.requestAnimationFrame(paint);
+      }, { threshold: 0.01 });
+
+      const onPointerMove = (event: PointerEvent) => {
+        const rect = root.getBoundingClientRect();
+        pointerX = event.clientX - rect.left;
+        pointerY = event.clientY - rect.top;
+      };
+      const onPointerLeave = () => { pointerX = -1000; pointerY = -1000; };
+
+      resize();
+      root.dataset.renderState = 'running';
+      observer.observe(root);
+      window.addEventListener('resize', resize, { passive: true });
+      root.addEventListener('pointermove', onPointerMove, { passive: true });
+      root.addEventListener('pointerleave', onPointerLeave, { passive: true });
+      frame = window.requestAnimationFrame(paint);
+
+      document.addEventListener('astro:before-swap', () => {
+        observer.disconnect();
+        window.removeEventListener('resize', resize);
+        root.removeEventListener('pointermove', onPointerMove);
+        root.removeEventListener('pointerleave', onPointerLeave);
+        window.cancelAnimationFrame(frame);
+      }, { once: true });
+    }
+  }
+</script>

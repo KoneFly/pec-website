@@ -7,6 +7,8 @@ import IntroScreen from '../components/bg/IntroScreen.astro';
 const BASE_RAW = import.meta.env.BASE_URL;
 const BASE = BASE_RAW.endsWith('/') ? BASE_RAW : `${BASE_RAW}/`;
 const logoSrc = `${BASE}logo.jpg`;
+const faviconSrc = `${BASE}favicon.svg`;
+const route = (path: string) => `${BASE}${path.replace(/^\/+/, '')}`;
 /**
  * 变体 V4：Sui-IB 深蓝夜色氛围版
  * ---
@@ -27,6 +29,7 @@ const logoSrc = `${BASE}logo.jpg`;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>V4 · 深蓝夜色氛围 - 光电科技</title>
+    <link rel="icon" type="image/svg+xml" href={faviconSrc} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Raleway:wght@200;300;400;500;600&family=Noto+Serif+SC:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -265,6 +268,33 @@ const logoSrc = `${BASE}logo.jpg`;
         transition: opacity 1.2s ease 0.7s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s;
       }
       body.ready .hero-cn { opacity: 1; transform: translateY(0); }
+      .electric-segment {
+        display: inline-block;
+        opacity: 0.22;
+        color: rgba(230, 236, 245, 0.72);
+        text-shadow: none;
+        transition:
+          opacity 0.42s ease,
+          color 0.42s ease,
+          text-shadow 0.58s ease;
+      }
+      .electric-segment.is-powered {
+        opacity: 1;
+        color: var(--ink);
+        text-shadow: 0 0 22px rgba(190, 214, 248, 0.42);
+      }
+      .electric-segment[data-electric-segment="1"].is-powered {
+        color: #F4FAFF;
+        text-shadow:
+          0 0 12px rgba(255, 255, 255, 0.85),
+          0 0 36px rgba(190, 214, 248, 0.68);
+      }
+      .electric-segment[data-electric-segment="2"].is-powered {
+        color: var(--brand-hi);
+        text-shadow:
+          0 0 12px rgba(135, 167, 245, 0.8),
+          0 0 36px rgba(66, 136, 201, 0.55);
+      }
       .hero-cn em {
         font-style: normal;
         color: var(--brand-hi);
@@ -375,6 +405,7 @@ const logoSrc = `${BASE}logo.jpg`;
         position: relative; z-index: 2;
         max-width: 1280px; margin: 0 auto;
         padding: 6rem 2rem;
+        background: rgba(12, 14, 20, 0.92);
         border-top: 1px solid var(--line);
         border-bottom: 1px solid var(--line);
         display: grid;
@@ -385,22 +416,55 @@ const logoSrc = `${BASE}logo.jpg`;
         padding: 0 2rem;
         border-left: 1px solid var(--line);
         text-align: center;
+        position: relative;
       }
       .stat-cell:first-child { border-left: none; }
       .stat-num {
-        font-family: 'Cormorant Garamond', serif;
+        position: relative;
+        display: inline-block;
+        font-family: 'JetBrains Mono', monospace;
         font-weight: 500;
         font-size: 4rem;
-        line-height: 1;
-        color: var(--brand-hi);
+        line-height: 0.95;
+        color: #E8B36A;
         margin-bottom: 0.75rem;
-        text-shadow: 0 0 40px rgba(135,167,245,0.3);
+        letter-spacing: -0.08em;
+        text-shadow:
+          0 0 2px rgba(255, 241, 205, 0.95),
+          0 0 12px rgba(232, 179, 106, 0.78),
+          0 0 30px rgba(232, 179, 106, 0.26);
+        filter: saturate(0.9);
+      }
+      .stat-num::before {
+        content: '';
+        position: absolute;
+        inset: -0.25rem -0.45rem;
+        border: 1px solid rgba(232, 179, 106, 0.16);
+        border-radius: 2px;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+      .stat-num::after {
+        content: '';
+        position: absolute;
+        left: 0.1em;
+        right: 0.1em;
+        bottom: -0.2rem;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(232, 179, 106, 0.72), transparent);
+        box-shadow: 0 0 12px rgba(232, 179, 106, 0.58);
+        animation: tube-scan 3.8s ease-in-out infinite;
       }
       .stat-num sup {
         font-size: 1.5rem;
         vertical-align: super;
-        color: var(--brand);
+        color: #F2D09A;
         margin-left: 0.15rem;
+        letter-spacing: 0;
+      }
+      @keyframes tube-scan {
+        0%, 100% { opacity: 0.24; transform: scaleX(0.65); }
+        50% { opacity: 0.9; transform: scaleX(1); }
       }
       .stat-label {
         font-family: 'Raleway', sans-serif;
@@ -658,6 +722,20 @@ const logoSrc = `${BASE}logo.jpg`;
       @media (max-width: 600px) {
         .manifesto-grid { grid-template-columns: 1fr; }
         .footer-grid { grid-template-columns: 1fr; }
+        .stats { padding: 4.5rem 1rem; }
+        .stat-cell { padding-left: 1rem; padding-right: 1rem; }
+        .stat-num { font-size: 2.75rem; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .electric-segment,
+        .electric-segment.is-powered {
+          opacity: 1;
+          color: var(--ink);
+          text-shadow: none;
+          transition: none;
+        }
+        .stat-num::after { animation: none; }
       }
 
       /* Fade-up 通用 */
@@ -690,11 +768,11 @@ const logoSrc = `${BASE}logo.jpg`;
           </div>
         </a>
         <ul>
-          <li><a href="/team">团队</a></li>
-          <li><a href="/projects">项目</a></li>
-          <li><a href="/devices">设备</a></li>
-          <li><a href="/items">资产</a></li>
-          <li><a href="/recruit" class="nav-cta">Join</a></li>
+          <li><a href={route('/team')}>团队</a></li>
+          <li><a href={route('/projects')}>项目</a></li>
+          <li><a href={route('/devices')}>设备</a></li>
+          <li><a href={route('/items')}>资产</a></li>
+          <li><a href={route('/recruit')} class="nav-cta">Join</a></li>
         </ul>
       </nav>
     </header>
@@ -707,8 +785,10 @@ const logoSrc = `${BASE}logo.jpg`;
       <div class="hero-eyebrow">Est. 2016 · 大学生光电科技协会</div>
 
       <h1 class="hero-cn">
-        我们用<em>光</em>与<em>电</em><br />
-        编写未来的可能
+        <span class="electric-segment" data-electric-segment="0">我们用</span>
+        <span class="electric-segment" data-electric-segment="1"><em>光</em></span>
+        <span class="electric-segment" data-electric-segment="2">与<em>电</em></span><br />
+        <span class="electric-segment" data-electric-segment="3">编写未来的可能</span>
       </h1>
       <div class="hero-en">— Photoelectric Technology —</div>
 
@@ -717,8 +797,8 @@ const logoSrc = `${BASE}logo.jpg`;
       </p>
 
       <div class="hero-cta">
-        <a href="/recruit" class="btn btn-primary">加入我们</a>
-        <a href="/projects" class="btn btn-ghost">Explore</a>
+        <a href={route('/recruit')} class="btn btn-primary">加入我们</a>
+        <a href={route('/projects')} class="btn btn-ghost">Explore</a>
       </div>
 
       <div class="scroll-cue">Scroll</div>
@@ -859,7 +939,7 @@ const logoSrc = `${BASE}logo.jpg`;
         我们欢迎每一位对硬件、算法与工程实践怀有热忱的同学。
         协会实验室的灯，为每一份认真而亮起。
       </p>
-      <a href="/recruit" class="btn btn-primary fade-up">加入我们 · Join Us</a>
+      <a href={route('/recruit')} class="btn btn-primary fade-up">加入我们 · Join Us</a>
     </section>
 
     <!-- Footer -->
@@ -872,7 +952,7 @@ const logoSrc = `${BASE}logo.jpg`;
         <div>
           <h4>Sitemap</h4>
           <ul>
-            <li><a href="/team">团队 · Team</a></li>
+            <li><a href={route('/team')}>团队 · Team</a></li>
           </ul>
         </div>
         <div>
@@ -889,29 +969,48 @@ const logoSrc = `${BASE}logo.jpg`;
     </footer>
 
     <script>
-      // ============ Ready 触发（IntroScreen 已承担开屏仪式） ============
-      // 立即触发 ready，让 header/logo/hero 元素的入场过渡生效
-      // 因为 IntroScreen 会覆盖整个页面直到完成，这里立刻标记 ready 不会露馅
-      requestAnimationFrame(() => {
-        document.body.classList.add('ready');
-      });
+      // ============ 开屏 → 主页视觉交接 ============
+      // IntroScreen 点击后发出事件；电路先显现，正文稍后进入，形成连续的一段动画。
+      window.addEventListener('pec:intro-exit', () => {
+        document.body.classList.add('intro-exiting');
+        window.setTimeout(() => {
+          document.body.classList.add('ready');
+        }, 360);
+
+        // 中心芯片完成第一束脉冲后，电流按语义顺序点亮主标题。
+        const poweredSegments = document.querySelectorAll('[data-electric-segment]');
+        poweredSegments.forEach((segment, index) => {
+          window.setTimeout(() => {
+            segment.classList.add('is-powered');
+          }, 820 + index * 250);
+        });
+      }, { once: true });
+
+      window.addEventListener('pec:intro-entered', () => {
+        document.body.classList.remove('intro-exiting');
+      }, { once: true });
 
       // ============ 星尘 Canvas (轻量 Canvas 2D · 不用 WebGL) ============
       (function() {
-        const canvas = document.getElementById('stardust');
+        const canvas = document.getElementById('stardust') as HTMLCanvasElement | null;
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        const canvasElement = canvas;
+        const drawingContext = ctx;
         let W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
         const STAR_COUNT = window.matchMedia('(max-width: 768px)').matches ? 60 : 140;
-        const stars = [];
+        type Star = { x: number; y: number; r: number; baseA: number; twinkleSpeed: number; phase: number; hueBias: number };
+        const stars: Star[] = [];
 
         function resize() {
           W = window.innerWidth;
           H = window.innerHeight;
-          canvas.width = W * dpr;
-          canvas.height = H * dpr;
-          canvas.style.width = W + 'px';
-          canvas.style.height = H + 'px';
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          canvasElement.width = W * dpr;
+          canvasElement.height = H * dpr;
+          canvasElement.style.width = W + 'px';
+          canvasElement.style.height = H + 'px';
+          drawingContext.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
         resize();
         window.addEventListener('resize', resize);
@@ -938,7 +1037,7 @@ const logoSrc = `${BASE}logo.jpg`;
         function loop() {
           mx += (tx - mx) * 0.05;
           my += (ty - my) * 0.05;
-          ctx.clearRect(0, 0, W, H);
+          drawingContext.clearRect(0, 0, W, H);
 
           const now = performance.now() / 1000;
           for (const s of stars) {
@@ -946,20 +1045,20 @@ const logoSrc = `${BASE}logo.jpg`;
             const alpha = Math.max(0.05, Math.min(1, a));
             // 蓝白冷色调
             const isBlue = s.hueBias > 0.7;
-            ctx.fillStyle = isBlue
+            drawingContext.fillStyle = isBlue
               ? `rgba(135, 167, 245, ${alpha})`
               : `rgba(230, 236, 245, ${alpha})`;
             const px = s.x + mx * (s.r * 0.5);
             const py = s.y + my * (s.r * 0.5);
-            ctx.beginPath();
-            ctx.arc(px, py, s.r, 0, Math.PI * 2);
-            ctx.fill();
+            drawingContext.beginPath();
+            drawingContext.arc(px, py, s.r, 0, Math.PI * 2);
+            drawingContext.fill();
             // 少量星有 halo
             if (s.r > 1.2) {
-              ctx.fillStyle = `rgba(135, 167, 245, ${alpha * 0.15})`;
-              ctx.beginPath();
-              ctx.arc(px, py, s.r * 3, 0, Math.PI * 2);
-              ctx.fill();
+              drawingContext.fillStyle = `rgba(135, 167, 245, ${alpha * 0.15})`;
+              drawingContext.beginPath();
+              drawingContext.arc(px, py, s.r * 3, 0, Math.PI * 2);
+              drawingContext.fill();
             }
           }
           requestAnimationFrame(loop);
@@ -971,15 +1070,13 @@ const logoSrc = `${BASE}logo.jpg`;
       const countIO = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (!e.isIntersecting) return;
-          const el = e.target;
-          const target = parseInt(el.dataset.count, 10);
+          const el = e.target as HTMLElement;
+          const target = parseInt(el.dataset.count ?? '', 10);
           if (!target) return;
-          const originalText = el.textContent;
-          const suffix = originalText.match(/<sup>[^<]*<\/sup>/)?.[0] || '';
           const suffixHtml = el.querySelector('sup')?.outerHTML || '';
           const duration = 1400;
           const start = performance.now();
-          function tick(now) {
+          function tick(now: number) {
             const p = Math.min((now - start) / duration, 1);
             const eased = 1 - Math.pow(1 - p, 3);
             const val = Math.floor(target * eased);

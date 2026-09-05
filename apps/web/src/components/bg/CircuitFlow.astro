@@ -220,6 +220,22 @@
     inset: 0;
     width: 100%;
     height: 100%;
+    opacity: 0;
+    transform: scale(0.9);
+    transform-origin: 50% 50%;
+    transition:
+      opacity 1.15s ease,
+      transform 1.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(body.intro-exiting) .circuit-svg {
+    opacity: 0.32;
+    transform: scale(0.965);
+  }
+
+  :global(body.ready) .circuit-svg {
+    opacity: 1;
+    transform: scale(1);
   }
 
   /* ==============================================
@@ -418,6 +434,7 @@
   // 鼠标视差（轻量）
   const bg = document.querySelector<HTMLElement>('.circuit-bg');
   if (bg && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const element = bg;
     let tx = 0, ty = 0, cx = 0, cy = 0;
     let raf = 0;
     window.addEventListener('mousemove', (e) => {
@@ -427,7 +444,7 @@
     function loop() {
       cx += (tx - cx) * 0.05;
       cy += (ty - cy) * 0.05;
-      bg.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      element.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);

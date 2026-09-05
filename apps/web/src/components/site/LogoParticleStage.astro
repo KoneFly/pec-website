@@ -1,0 +1,284 @@
+---
+interface Props {
+  logoSrc: string;
+  controls?: boolean;
+  autoSequence?: boolean;
+  particleCount?: number;
+}
+
+const { logoSrc, controls = true, autoSequence = false, particleCount = 1000 } = Astro.props;
+---
+
+<div
+  class:list={["logo-particle-stage", { compact: !controls }]}
+  data-logo-src={logoSrc}
+  data-auto-sequence={autoSequence}
+  data-particle-count={particleCount}
+>
+  <canvas aria-label="Logo 粒子三态演示"></canvas>
+  <div class="particle-stage-overlay">
+    <span class="particle-stage-state" aria-live="polite">01 / LOGO TRACE</span>
+    <span class="particle-stage-hint">拖动鼠标靠近粒子</span>
+  </div>
+  <div class="particle-stage-controls" role="group" aria-label="粒子状态控制">
+    <button type="button" data-particle-state="0">Logo</button>
+    <button type="button" data-particle-state="1">Chip</button>
+    <button type="button" data-particle-state="2">Wordmark</button>
+    <button type="button" data-particle-replay>Replay</button>
+  </div>
+</div>
+
+<style>
+  .logo-particle-stage {
+    position: relative;
+    min-height: min(62vh, 600px);
+    overflow: hidden;
+    border: 1px solid rgba(190, 214, 248, 0.16);
+    background: #0A0C12;
+  }
+  .logo-particle-stage.compact {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    z-index: 1;
+    border: 0;
+    background: transparent;
+    opacity: 0.46;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  .logo-particle-stage.compact .particle-stage-overlay,
+  .logo-particle-stage.compact .particle-stage-controls { display: none; }
+  .logo-particle-stage canvas { display: block; width: 100%; height: 100%; min-height: inherit; }
+  .particle-stage-overlay { position: absolute; inset: 1rem 1.25rem auto; display: flex; justify-content: space-between; gap: 1rem; pointer-events: none; }
+  .particle-stage-state, .particle-stage-hint { color: rgba(230, 236, 245, 0.7); font: 0.68rem 'JetBrains Mono', monospace; letter-spacing: 0.12em; }
+  .particle-stage-hint { color: rgba(230, 236, 245, 0.42); letter-spacing: 0.04em; }
+  .particle-stage-controls { position: absolute; right: 1.25rem; bottom: 1.25rem; display: flex; flex-wrap: wrap; justify-content: end; gap: 0.45rem; }
+  .particle-stage-controls button { border: 1px solid rgba(190, 214, 248, 0.22); padding: 0.5rem 0.7rem; color: rgba(230, 236, 245, 0.72); background: rgba(10, 12, 18, 0.72); font: 0.65rem 'JetBrains Mono', monospace; cursor: pointer; transition: color 180ms ease, border-color 180ms ease, background 180ms ease; }
+  .particle-stage-controls button:hover, .particle-stage-controls button[aria-pressed="true"] { color: #F4FAFF; border-color: #87A7F5; background: rgba(66, 136, 201, 0.18); }
+  @media (max-width: 600px) { .particle-stage-overlay { display: grid; gap: 0.35rem; } .particle-stage-controls { left: 1rem; right: 1rem; justify-content: start; } }
+  @media (prefers-reduced-motion: reduce) { .particle-stage-hint { display: none; } }
+</style>
+
+<script>
+    const root = document.querySelector<HTMLElement>('.logo-particle-stage');
+  const canvas = root?.querySelector<HTMLCanvasElement>('canvas');
+  const stateLabel = root?.querySelector<HTMLElement>('.particle-stage-state');
+  const stateButtons = Array.from(root?.querySelectorAll<HTMLButtonElement>('[data-particle-state]') || []);
+  const replayButton = root?.querySelector<HTMLButtonElement>('[data-particle-replay]');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (root && canvas && stateLabel) {
+    const context = canvas.getContext('2d', { alpha: true });
+    const image = new Image();
+
+    type Point = { x: number; y: number };
+    type Particle = Point & { fromX: number; fromY: number; targetX: number; targetY: number; radius: number; alpha: number; phase: number };
+    const labels = ['01 / LOGO TRACE', '02 / SILKSCREEN CHIP', '03 / WORDMARK'];
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let particles: Particle[] = [];
+    let targets: Point[][] = [];
+    let activeState = reduceMotion ? 2 : 0;
+    let transitionStart = performance.now();
+    let transitionDuration = 1500;
+    let frame = 0;
+    let ready = false;
+    let pointerX = -10000;
+    let pointerY = -10000;
+    let seed = 0x21f0a7;
+
+    const random = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+    const ease = (value: number) => 1 - Math.pow(1 - clamp(value, 0, 1), 3);
+    const normalize = (points: Point[], count: number): Point[] => {
+      if (!points.length) return Array.from({ length: count }, () => ({ x: 0, y: 0 }));
+      const normalized: Point[] = [];
+      for (let index = 0; index < count; index += 1) {
+        const point = points[(index * 17) % points.length];
+        normalized.push({ x: point.x, y: point.y });
+      }
+      return normalized;
+    };
+
+    const sampleCanvas = (source: HTMLCanvasElement, predicate: (r: number, g: number, b: number, alpha: number) => boolean): Point[] => {
+      const sampleContext = source.getContext('2d');
+      if (!sampleContext) return [];
+      const pixels = sampleContext.getImageData(0, 0, source.width, source.height).data;
+      const points: Point[] = [];
+      for (let y = 0; y < source.height; y += 2) {
+        for (let x = 0; x < source.width; x += 2) {
+          const index = (y * source.width + x) * 4;
+          if (predicate(pixels[index], pixels[index + 1], pixels[index + 2], pixels[index + 3])) {
+            points.push({ x: x - source.width / 2, y: y - source.height / 2 });
+          }
+        }
+      }
+      return points;
+    };
+
+    const createLogoTarget = (): Point[] => {
+      const buffer = document.createElement('canvas');
+      const size = 180;
+      buffer.width = size;
+      buffer.height = size;
+      buffer.getContext('2d')?.drawImage(image, 0, 0, size, size);
+      const points = sampleCanvas(buffer, (r, g, b, alpha) => alpha > 0 && (r + g + b < 690 || b - r > 18));
+      const scale = Math.min(width, height) * 0.42 / size;
+      return points.map((point) => ({ x: point.x * scale, y: point.y * scale }));
+    };
+
+    const createChipTarget = (): Point[] => {
+      const points: Point[] = [];
+      const addLine = (x1: number, y1: number, x2: number, y2: number, step = 5) => {
+        const length = Math.max(1, Math.hypot(x2 - x1, y2 - y1));
+        for (let t = 0; t <= length; t += step) {
+          const p = t / length;
+          points.push({ x: x1 + (x2 - x1) * p, y: y1 + (y2 - y1) * p });
+        }
+      };
+      const size = Math.min(width, height) * 0.32;
+      const half = size / 2;
+      addLine(-half, -half, half, -half);
+      addLine(half, -half, half, half);
+      addLine(half, half, -half, half);
+      addLine(-half, half, -half, -half);
+      addLine(-half + 16, -half + 16, half - 16, -half + 16, 5);
+      addLine(half - 16, -half + 16, half - 16, half - 16, 5);
+      addLine(half - 16, half - 16, -half + 16, half - 16, 5);
+      addLine(-half + 16, half - 16, -half + 16, -half + 16, 5);
+      for (let index = -3; index <= 3; index += 1) {
+        const offset = index * 18;
+        addLine(-half + offset, -half - 20, -half + offset, -half, 4);
+        addLine(-half + offset, half, -half + offset, half + 20, 4);
+        addLine(-half - 20, -half + offset, -half, -half + offset, 4);
+        addLine(half, -half + offset, half + 20, -half + offset, 4);
+      }
+      for (let row = -2; row <= 2; row += 1) {
+        for (let column = -2; column <= 2; column += 1) {
+          points.push({ x: column * 22, y: row * 22 });
+        }
+      }
+      return points;
+    };
+
+    const createWordmarkTarget = (): Point[] => {
+      const buffer = document.createElement('canvas');
+      buffer.width = 720;
+      buffer.height = 150;
+      const bufferContext = buffer.getContext('2d');
+      if (!bufferContext) return [];
+      bufferContext.fillStyle = '#fff';
+      bufferContext.textAlign = 'center';
+      bufferContext.textBaseline = 'middle';
+      bufferContext.font = `500 ${Math.max(18, Math.min(38, width * 0.035))}px "JetBrains Mono", monospace`;
+      bufferContext.fillText('PHOTOELECTRIC', 360, 62);
+      bufferContext.font = `400 ${Math.max(9, Math.min(17, width * 0.015))}px "JetBrains Mono", monospace`;
+      bufferContext.fillText('TECHNOLOGY', 360, 103);
+      const points = sampleCanvas(buffer, (_, __, ___, alpha) => alpha > 40);
+      const scale = Math.min(1, width / 900);
+      return points.map((point) => ({ x: point.x * scale, y: point.y * scale }));
+    };
+
+    const setButtonState = () => {
+      stateLabel.textContent = labels[activeState];
+      stateButtons.forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.particleState) === activeState)));
+    };
+
+    const setState = (nextState: number, immediate = false) => {
+      const next = clamp(nextState, 0, 2);
+      if (!particles.length || !targets[next]) return;
+      activeState = next;
+      transitionDuration = immediate || reduceMotion ? 0 : 1500;
+      transitionStart = performance.now();
+      particles.forEach((particle, index) => {
+        particle.fromX = particle.x;
+        particle.fromY = particle.y;
+        particle.targetX = targets[next][index].x;
+        particle.targetY = targets[next][index].y;
+      });
+      setButtonState();
+    };
+
+    const resize = () => {
+      const rect = root.getBoundingClientRect();
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!ready) return;
+      targets = [createLogoTarget(), createChipTarget(), createWordmarkTarget()].map((points) => normalize(points, particles.length));
+      setState(activeState, true);
+    };
+
+    const initialize = () => {
+      if (!context) return;
+      resize();
+      const configuredCount = Number(root.dataset.particleCount || 1000);
+      const count = window.innerWidth <= 700 ? Math.min(300, configuredCount) : configuredCount;
+      root.dataset.activeParticleCount = String(count);
+      targets = [createLogoTarget(), createChipTarget(), createWordmarkTarget()].map((points) => normalize(points, count));
+      seed = 0x21f0a7;
+      particles = Array.from({ length: count }, (_, index) => {
+        const x = (random() - 0.5) * width;
+        const y = (random() - 0.5) * height;
+        return { x, y, fromX: x, fromY: y, targetX: targets[activeState][index].x, targetY: targets[activeState][index].y, radius: 0.7 + random() * 1.5, alpha: 0.35 + random() * 0.6, phase: random() * Math.PI * 2 };
+      });
+      ready = true;
+      setState(activeState, reduceMotion);
+      setButtonState();
+
+      if (root.dataset.autoSequence === 'true' && !reduceMotion) {
+        window.setTimeout(() => setState(1), 1700);
+        window.setTimeout(() => setState(2), 3400);
+      }
+    };
+
+    const paint = (time: number) => {
+      if (!context) return;
+      context.clearRect(0, 0, width, height);
+      const progress = transitionDuration === 0 ? 1 : ease((time - transitionStart) / transitionDuration);
+      context.save();
+      context.translate(width / 2, height / 2);
+      for (const particle of particles) {
+        const baseX = particle.fromX + (particle.targetX - particle.fromX) * progress;
+        const baseY = particle.fromY + (particle.targetY - particle.fromY) * progress;
+        const distanceX = baseX - pointerX;
+        const distanceY = baseY - pointerY;
+        const distanceValue = Math.hypot(distanceX, distanceY) || 1;
+        const repel = distanceValue < 100 ? (100 - distanceValue) / 100 : 0;
+        const x = baseX + (distanceX / distanceValue) * repel * 24;
+        const y = baseY + (distanceY / distanceValue) * repel * 24;
+        const shimmer = 0.78 + Math.sin(time / 700 + particle.phase) * 0.22;
+        context.fillStyle = `rgba(230, 239, 250, ${particle.alpha * shimmer})`;
+        context.beginPath();
+        context.arc(x, y, particle.radius, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.restore();
+      frame = window.requestAnimationFrame(paint);
+    };
+
+    image.addEventListener('load', initialize, { once: true });
+    image.src = root.dataset.logoSrc || '';
+    window.addEventListener('resize', resize, { passive: true });
+    root.addEventListener('pointermove', (event) => {
+      const rect = root.getBoundingClientRect();
+      pointerX = event.clientX - rect.left - width / 2;
+      pointerY = event.clientY - rect.top - height / 2;
+    }, { passive: true });
+    root.addEventListener('pointerleave', () => { pointerX = -10000; pointerY = -10000; }, { passive: true });
+    stateButtons.forEach((button) => button.addEventListener('click', () => setState(Number(button.dataset.particleState))));
+    replayButton?.addEventListener('click', () => { setState(0); window.setTimeout(() => setState(1), 1800); window.setTimeout(() => setState(2), 3600); });
+    frame = window.requestAnimationFrame(paint);
+    document.addEventListener('astro:before-swap', () => { window.cancelAnimationFrame(frame); window.removeEventListener('resize', resize); }, { once: true });
+  }
+</script>

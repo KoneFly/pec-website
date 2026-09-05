@@ -1,5 +1,7 @@
 # 架构设计文档
 
+> 本文保留完整的可选后端方案。当前实施状态、视觉路线和分阶段验收以 [`site-evolution-roadmap.md`](site-evolution-roadmap.md) 为准。当前公开站只运行 Astro + GitHub Pages，群晖、Tunnel、设备状态和留言尚未启用。
+
 ## 1. 整体架构
 
 PEC 网站采用**前后端分离 + 内网穿透**架构，前端纯静态托管在 CDN，后端跑在协会群晖 NAS 内网，通过 Cloudflare Tunnel 暴露 API。

@@ -1,0 +1,26 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import InfoRow from '../components/site/InfoRow.astro';
+---
+
+<SiteLayout title="设备" description="大学生光电科技协会公开设备展示">
+  <section class="page-hero page-wrap">
+    <span class="page-index">04 / EQUIPMENT</span>
+    <h1>让设备，<br /><em>保持在线。</em></h1>
+    <p>这里展示协会正在使用的代表性设备。实时状态接口属于后续扩展，目前页面不暴露内部网络和设备凭据。</p>
+  </section>
+
+  <section class="page-section page-wrap">
+    <div class="section-heading"><h2>公开设备</h2><p>PUBLIC INVENTORY</p></div>
+    <div class="info-list">
+      <InfoRow index="01" title="拓竹 A1" english="BAMBU LAB A1" description="用于快速原型、结构验证和创客实践。实时使用状态接口待后续接入。" />
+      <InfoRow index="02" title="拓竹 X2D" english="BAMBU LAB X2D" description="用于更复杂的打印实验和项目制作。实时使用状态接口待后续接入。" />
+      <InfoRow index="03" title="树莓派与嵌入式设备" english="EMBEDDED DEVICES" description="用于边缘计算、视觉采集、控制实验和项目原型。" />
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
+  .info-list { border-top: 1px solid var(--site-line); }
+</style>

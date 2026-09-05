@@ -1,0 +1,28 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import InfoRow from '../components/site/InfoRow.astro';
+---
+
+<SiteLayout title="团队" description="大学生光电科技协会的组织与部门">
+  <section class="page-hero page-wrap">
+    <span class="page-index">01 / PEOPLE</span>
+    <h1>一起工作，<br /><em>一起发光。</em></h1>
+    <p>协会由不同年级、不同方向的成员组成。我们在部门协作中学习，在真实项目和学科竞赛中把想法变成结果。</p>
+  </section>
+
+  <section class="page-section page-wrap">
+    <div class="section-heading"><h2>组织结构</h2><p>FIVE DEPARTMENTS</p></div>
+    <div class="info-list">
+      <InfoRow index="01" title="办公室" english="OFFICE" description="负责日常协调、资料整理和协会事务衔接。" />
+      <InfoRow index="02" title="技术部" english="TECHNOLOGY" description="围绕嵌入式开发、计算机视觉、机器人操作与竞赛项目开展技术实践。" />
+      <InfoRow index="03" title="宣传部" english="COMMUNICATION" description="记录协会活动与项目成果，负责内容策划和视觉传播。" />
+      <InfoRow index="04" title="活动部" english="ACTIVITIES" description="策划交流、培训和实践活动，让知识在成员之间流动。" />
+      <InfoRow index="05" title="财务部" english="FINANCE" description="负责协会经费记录、物资登记和相关事务管理。" />
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
+  .info-list { border-top: 1px solid var(--site-line); }
+</style>

@@ -1,0 +1,38 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import InfoRow from '../components/site/InfoRow.astro';
+---
+
+<SiteLayout title="招新" description="大学生光电科技协会招新信息">
+  <section class="page-hero page-wrap">
+    <span class="page-index">03 / JOIN</span>
+    <h1>下一束光，<br /><em>等你加入。</em></h1>
+    <p>无论你从哪个方向开始，都可以在协会找到真实的项目、愿意交流的伙伴和持续实践的机会。</p>
+  </section>
+
+  <section class="page-section page-wrap">
+    <div class="section-heading"><h2>加入路径</h2><p>FROM INTEREST TO PRACTICE</p></div>
+    <div class="info-list">
+      <InfoRow index="01" title="了解方向" english="FIND YOUR FIELD" description="从嵌入式、计算机视觉、机器人操作或创客实践中找到感兴趣的起点。" />
+      <InfoRow index="02" title="参与交流" english="MEET THE TEAM" description="通过协会公开渠道了解近期活动、培训和项目安排。" />
+      <InfoRow index="03" title="进入实践" english="BUILD TOGETHER" description="在具体任务中学习工具、记录过程，并与团队一起完成可验证的成果。" />
+    </div>
+  </section>
+
+  <section class="page-section recruit-callout">
+    <div class="page-wrap recruit-callout-inner">
+      <div><span class="page-index">OPEN INVITATION</span><h2>认真做事，也认真交流。</h2></div>
+      <p>具体招新时间和报名入口将在协会公开渠道发布。</p>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
+  .info-list { border-top: 1px solid var(--site-line); }
+  .recruit-callout { background: var(--site-night-soft); }
+  .recruit-callout-inner { display: flex; align-items: end; justify-content: space-between; gap: 3rem; }
+  .recruit-callout h2 { margin: 1rem 0 0; font: 500 clamp(1.8rem, 4vw, 3.5rem) 'Noto Serif SC', serif; }
+  .recruit-callout p { max-width: 300px; margin: 0; color: var(--site-muted); line-height: 1.8; }
+  @media (max-width: 700px) { .recruit-callout-inner { align-items: start; flex-direction: column; gap: 1.5rem; } }
+</style>

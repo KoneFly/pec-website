@@ -1,0 +1,25 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import LogoParticleStage from '../../components/site/LogoParticleStage.astro';
+
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
+const logoSrc = `${base}logo.jpg`;
+---
+
+<SiteLayout title="粒子实验室" description="光电科技协会 Logo 粒子三态实验">
+  <section class="page-hero page-wrap">
+    <span class="page-index">LAB / PARTICLE STUDY</span>
+    <h1>让标志，<br /><em>成为运动。</em></h1>
+    <p>这是协会视觉实验室。粒子从真实 Logo 采样，经过芯片丝印态，最终组成英文标识。</p>
+  </section>
+
+  <section class="page-section page-wrap">
+    <div class="section-heading"><h2>三态演示</h2><p>PIXEL → CIRCUIT → WORDMARK</p></div>
+    <LogoParticleStage logoSrc={logoSrc} />
+  </section>
+</SiteLayout>
+
+<style>
+  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
+</style>

@@ -1,0 +1,41 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import InfoRow from '../components/site/InfoRow.astro';
+import MonochromeParticles from '../components/site/MonochromeParticles.astro';
+---
+
+<SiteLayout title="项目" description="大学生光电科技协会的实践方向与项目展示">
+  <section class="page-hero page-wrap">
+    <span class="page-index">02 / PRACTICE</span>
+    <h1>把想法，<br /><em>做成现实。</em></h1>
+    <p>从一块控制板到一套完整系统，从第一次调试到赛场验证，项目是我们学习和交流的共同载体。</p>
+  </section>
+
+  <section class="page-section page-wrap">
+    <div class="section-heading"><h2>实践方向</h2><p>FOUR FIELDS</p></div>
+    <div class="info-list">
+      <InfoRow index="01" title="嵌入式开发" english="EMBEDDED SYSTEMS" description="以单片机、嵌入式 Linux 和控制系统为基础，完成从电路接口到软件逻辑的闭环。" />
+      <InfoRow index="02" title="计算机视觉" english="COMPUTER VISION" description="围绕图像采集、目标识别和视觉反馈建立可运行、可验证的算法系统。" />
+      <InfoRow index="03" title="机器人操作" english="ROBOTICS & CONTROL" description="将传感器、运动控制和任务逻辑结合，关注系统在真实环境中的稳定运行。" />
+      <InfoRow index="04" title="创客实践" english="MAKER & PROTOTYPING" description="通过 3D 打印、结构设计和快速原型，把概念推进到可以测试的实物。" />
+    </div>
+  </section>
+
+  <section class="page-section project-note">
+    <MonochromeParticles />
+    <div class="page-wrap project-note-inner">
+      <span class="page-index">PROJECT ARCHIVE</span>
+      <h2>项目资料正在持续整理。</h2>
+      <p>后续将按项目补充照片、技术栈、竞赛成果和成员记录。</p>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
+  .info-list { border-top: 1px solid var(--site-line); }
+  .project-note { position: relative; overflow: hidden; background: #131416; }
+  .project-note-inner { position: relative; z-index: 1; min-height: 28vh; display: grid; align-content: center; }
+  .project-note h2 { margin: 1rem 0 0.6rem; font: 500 clamp(1.8rem, 4vw, 3rem) 'Noto Serif SC', serif; }
+  .project-note p { margin: 0; color: var(--site-muted); }
+</style>
