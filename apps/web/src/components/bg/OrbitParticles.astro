@@ -1,0 +1,130 @@
+<canvas class="orbit-particles" aria-hidden="true"></canvas>
+<style>
+  .orbit-particles { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+</style>
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('.orbit-particles');
+  const host = canvas?.closest<HTMLElement>('#intro-screen');
+  if (canvas && host) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+      let w=1,h=1,centerY=0,radiusX=0,radiusY=0,frame=0,elapsed=0,previous=0,disposed=false;
+      let mergeStart:number|null=null, scatterStart:number|null=null;
+      let seed=431;
+      const random=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
+      type Sample={x:number;y:number;path:SVGPathElement;length:number;total:number};
+      const points=Array.from({length:innerWidth<700?180:360},(_,i)=>({
+        angle:random()*Math.PI*2,band:random(),speed:.16+random()*.12,size:.5+random()*1.3,alpha:.3+random()*.6,
+        group:i%3,x:0,y:0,fromX:0,fromY:0,target:null as Sample|null, satellite:i%40===0
+      }));
+      const resize=()=>{
+        const rect=host.getBoundingClientRect();w=rect.width;h=rect.height;
+        const title=host.querySelector('.intro-title')?.getBoundingClientRect();
+        centerY=title?title.top-rect.top+title.height/2:h*.42;
+        radiusX=Math.min(w*.43,(title?.width||w*.5)*.57+36);
+        radiusY=Math.max((title?.height||100)*.75,Math.min(h*.2,145));
+        const dpr=Math.min(devicePixelRatio||1,1.5);
+        canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+      };
+      const pathPosition=(sample:Sample,advance=0)=>{
+        const point=sample.path.getPointAtLength(Math.min(sample.total,sample.length+advance));
+        const matrix=sample.path.getScreenCTM();
+        const rect=host.getBoundingClientRect();
+        if(!matrix)return {x:sample.x,y:sample.y};
+        return {x:matrix.a*point.x+matrix.c*point.y+matrix.e-rect.left,y:matrix.b*point.x+matrix.d*point.y+matrix.f-rect.top};
+      };
+      const merge=()=>{
+        const samples:Sample[]=[];
+        // 从现有流线采样：粒子实际落在 SVG 线条上，而非另外绘制近似曲线。
+        host.querySelectorAll<SVGPathElement>('.intro-paths path').forEach((path,index)=>{
+          if(index%6!==0)return;
+          const total=path.getTotalLength();
+          for(let n=0;n<100;n++){
+            const sample={x:0,y:0,path,length:total*n/100,total};
+            const position=pathPosition(sample);
+            if(position.x<10||position.x>w-10||position.y<10||position.y>h-10)continue;
+            samples.push({...sample,...position});
+          }
+        });
+        for(const p of points){
+          p.fromX=p.x;p.fromY=p.y;
+          p.target=samples.reduce<Sample|null>((best,s)=>{
+            if(!best)return s;
+            return Math.hypot(s.x-p.x,s.y-p.y)<Math.hypot(best.x-p.x,best.y-p.y)?s:best;
+          },null);
+        }
+        mergeStart=performance.now();start();
+      };
+      const scatter=()=>{
+        for(const p of points){p.fromX=p.x;p.fromY=p.y;}
+        scatterStart=performance.now();start();
+      };
+      const draw=(now:number)=>{
+        frame=0;
+        if(disposed||!host.isConnected){dispose();return;}
+        const dt=Math.min(40,now-(previous||now));previous=now;
+        if(mergeStart===null&&!reduced.matches)elapsed+=dt/1000;
+        const mp=mergeStart===null?0:Math.min(1,(now-mergeStart)/850);
+        const sp=scatterStart===null?0:Math.min(1,(now-scatterStart)/1350);
+        host.dataset.particleMode=scatterStart!==null?'scatter':mergeStart!==null?'merge':'orbit';
+        host.dataset.scatterProgress=sp.toFixed(2);
+        host.dataset.mergeProgress=mp.toFixed(2);
+        ctx.clearRect(0,0,w,h);
+        if(mergeStart===null){
+          for(let g=0;g<3;g++){
+            ctx.save();ctx.translate(w/2,centerY);ctx.rotate((g-1)*.12);
+            ctx.strokeStyle='rgba(160,201,224,0.07)';ctx.lineWidth=.7;
+            ctx.beginPath();ctx.ellipse(0,0,radiusX*(1+g*.055),radiusY*(1+g*.05),0,0,Math.PI*2);ctx.stroke();ctx.restore();
+          }
+        }
+        let merged=0;
+        for(const p of points){
+          const angle=p.angle+elapsed*p.speed;
+          const tilt=(p.group-1)*.12,depth=(Math.sin(angle)+1)/2;
+          const a=Math.cos(angle)*radiusX*(1+p.band*.15);
+          const b=Math.sin(angle)*radiusY*(1+p.band*.14);
+          let x=w/2+a*Math.cos(tilt)-b*Math.sin(tilt), y=centerY+a*Math.sin(tilt)+b*Math.cos(tilt);
+          if(mergeStart!==null&&p.target){
+            const target=pathPosition(p.target,Math.max(0,now-mergeStart-550)*.05);
+            const t=1-Math.pow(1-mp,3);x=p.fromX+(target.x-p.fromX)*t;y=p.fromY+(target.y-p.fromY)*t;
+            if(mp===1)merged++;
+          }
+          if(scatterStart!==null){
+            const dx=p.fromX-w/2,dy=p.fromY-centerY,len=Math.hypot(dx,dy)||1;
+            const travel=Math.hypot(w,h)*sp*sp*(.65+p.band*.5);
+            x=p.fromX+dx/len*travel;y=p.fromY+dy/len*travel;
+          }
+          p.x=x;p.y=y;
+          const alpha=p.alpha*(.45+depth*.55)*(1-sp);
+          ctx.fillStyle=`rgba(218,235,249,${alpha})`;ctx.beginPath();ctx.arc(x,y,p.satellite?2.4+depth:p.size,0,Math.PI*2);ctx.fill();
+          if(p.satellite&&mergeStart===null){
+            ctx.fillStyle='rgba(160,209,243,.08)';ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fill();
+            const trail=angle-.07;
+            ctx.strokeStyle='rgba(194,224,249,.3)';ctx.beginPath();ctx.moveTo(x,y);
+            ctx.lineTo(w/2+Math.cos(trail)*radiusX*Math.cos(tilt)-Math.sin(trail)*radiusY*Math.sin(tilt),centerY+Math.cos(trail)*radiusX*Math.sin(tilt)+Math.sin(trail)*radiusY*Math.cos(tilt));ctx.stroke();
+          }
+          if(sp>0&&!reduced.matches){
+            ctx.strokeStyle=`rgba(174,215,246,${alpha*.5})`;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-(x-p.fromX)*.06,y-(y-p.fromY)*.06);ctx.stroke();
+          }
+        }
+        host.dataset.particlesOnFlow=String(merged);
+        if(!reduced.matches&&!document.hidden&&sp<1)frame=requestAnimationFrame(draw);
+      };
+      const start=()=>{previous=0;if(!frame&&!disposed)frame=requestAnimationFrame(draw);};
+      const visibility=()=>{cancelAnimationFrame(frame);frame=0;if(!document.hidden)start();};
+      const ro=new ResizeObserver(()=>{resize();start();});
+      function dispose(){
+        if(disposed)return;disposed=true;cancelAnimationFrame(frame);ro.disconnect();
+        window.removeEventListener('pec:intro-exit',merge);window.removeEventListener('pec:intro-scatter',scatter);
+        window.removeEventListener('pec:intro-entered',dispose);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',visibility);
+      }
+      resize();ro.observe(host);start();
+      window.addEventListener('pec:intro-exit',merge,{once:true});
+      window.addEventListener('pec:intro-scatter',scatter,{once:true});
+      window.addEventListener('pec:intro-entered',dispose,{once:true});
+      window.addEventListener('pagehide',dispose,{once:true});
+      document.addEventListener('visibilitychange',visibility);reduced.addEventListener('change',visibility);
+    }
+  }
+</script>

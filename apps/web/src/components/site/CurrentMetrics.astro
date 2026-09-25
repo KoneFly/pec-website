@@ -1,0 +1,60 @@
+---
+const metrics = [
+  {value:80,suffix:'+',label:'活跃成员',english:'MEMBERS'},
+  {value:175,suffix:'',label:'国家级奖项',english:'NATIONAL'},
+  {value:182,suffix:'',label:'省级奖项',english:'PROVINCIAL'},
+  {value:2016,suffix:'',label:'创立年份',english:'SINCE'},
+];
+---
+<section class="current-metrics" aria-label="协会数据">
+  <div class="metric-heading"><span>每一份投入，都有回响。</span><small>触碰数字 · 点亮回路</small></div>
+  <div class="metric-grid">
+    {metrics.map((m,i) => (
+      <button class="metric-node" type="button" aria-label={`点亮${m.label}回路：${m.value}${m.suffix}`}>
+        <svg viewBox="0 0 260 180" preserveAspectRatio="none" aria-hidden="true">
+          <path class="rail" d="M0 152 H48 V126 H80 V102 H110 M260 28 H216 V55 H188 V78 H150" />
+          <path class="charge" pathLength="100" d="M0 152 H48 V126 H80 V102 H110 M260 28 H216 V55 H188 V78 H150" />
+          <circle cx="48" cy="152" r="2"/><circle cx="216" cy="28" r="2"/>
+        </svg>
+        <span class="metric-id">0{i+1} / {m.english}</span>
+        <span class="tube-value">{m.value}<sup>{m.suffix}</sup></span>
+        <span class="metric-label">{m.label}</span>
+      </button>
+    ))}
+  </div>
+</section>
+<style>
+  .current-metrics { position:relative; z-index:2; padding:5rem max(1rem,calc((100% - 1180px)/2)); background:linear-gradient(180deg,transparent,rgba(28,43,65,.48) 32%,rgba(28,43,65,.48) 65%,transparent); }
+  .metric-heading { display:flex; justify-content:space-between; gap:1rem; align-items:center; color:#cad8e7; margin-bottom:1.8rem; }
+  .metric-heading small { color:#93a8c0; font-size:.75rem; letter-spacing:.12em; }
+  .metric-grid {display:grid;grid-template-columns:repeat(4,1fr);}
+  .metric-node {position:relative; isolation:isolate; border:0;border-left:1px solid #9cbbd724;background:transparent; color:#d7e6f1; padding:1.4rem 1rem 2rem; cursor:pointer; transition:background .3s; }
+  .metric-node:first-child {border-left:0;}
+  .metric-node:focus-visible {outline:2px solid #a6dbf5;outline-offset:3px;}
+  .metric-node:hover,.metric-node:focus-visible {background:radial-gradient(ellipse,#63abdb13,transparent 70%);}
+  .metric-node svg {position:absolute;inset:0;width:100%;height:100%;z-index:-1;fill:#9bc7dc;pointer-events:none;}
+  .rail {fill:none;stroke:#9bc7dc;stroke-opacity:.17;stroke-width:.8;}
+  .charge {fill:none;stroke:#c5eeff;stroke-width:1.8;stroke-dasharray:12 88;stroke-dashoffset:100;opacity:0;}
+  .metric-node[data-charging] .charge {animation:metric-current 1.15s ease-out;}
+  .metric-id {display:block;text-align:left;font: .6rem 'JetBrains Mono',monospace;color:#a7bbce;letter-spacing:.13em;}
+  .tube-value {display:block;margin:2.2rem 0 1rem;font:500 clamp(2rem,4.6vw,3.8rem)/1 'JetBrains Mono',monospace;letter-spacing:-.06em;color:#edc089;text-shadow:0 0 3px #ffdc9c88,0 0 18px #f8ae6033;transition:color .25s,text-shadow .25s;}
+  .tube-value sup {font-size:.42em;vertical-align:super;}
+  .metric-label {font-size:.85rem;color:#bdcddb;}
+  .metric-node[data-charging] .tube-value {color:#fff0d6;text-shadow:0 0 8px #ffd8a499,0 0 28px #edb86777;}
+  @keyframes metric-current {0%{opacity:0;stroke-dashoffset:100}15%{opacity:1}80%{opacity:1}100%{opacity:0;stroke-dashoffset:0}}
+  @media(max-width:700px){.metric-grid{grid-template-columns:1fr 1fr;}.metric-node:nth-child(3){border-left:0;}.metric-node:nth-child(n+3){border-top:1px solid #9cbbd724;}.metric-heading{align-items:start;flex-direction:column;}.current-metrics{padding-block:3rem;}}
+  @media(prefers-reduced-motion:reduce){.metric-node[data-charging] .charge{animation:none;opacity:.4;stroke-dasharray:none;}.tube-value{transition:none;}}
+</style>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.metric-node').forEach(node => {
+    let timer: ReturnType<typeof setTimeout>;
+    const charge = () => {
+      clearTimeout(timer); node.removeAttribute('data-charging');
+      // 重启一次沿线脉冲，鼠标移入、触摸点击与键盘聚焦共用交互。
+      void node.offsetWidth; node.setAttribute('data-charging','');
+      timer=setTimeout(()=>node.removeAttribute('data-charging'),1200);
+    };
+    node.addEventListener('pointerenter',charge); node.addEventListener('focus',charge); node.addEventListener('click',charge);
+    window.addEventListener('pagehide',()=>clearTimeout(timer),{once:true});
+  });
+</script>

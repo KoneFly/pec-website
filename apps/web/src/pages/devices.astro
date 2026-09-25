@@ -1,26 +1,72 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
-import InfoRow from '../components/site/InfoRow.astro';
+const machines=[
+{id:'a1',title:'拓竹 A1',type:'3D 打印',mark:'A1',use:'从屏幕里的模型，到手里的样件。',desc:'用于结构验证、快速原型和创客实践。先用小样验证装配关系，再推进完整作品。',items:['结构样件','装配验证','创客制作'],checks:'确认耗材与模型尺寸；首层成型后检查附着情况；取件后整理工作区域。'},
+{id:'x2d',title:'拓竹 X2D',type:'3D 打印',mark:'X2D',use:'为项目制作，留出更多可能。',desc:'用于协会打印实验和项目制作。具体材料与工艺由负责人根据设备配置和任务需求确认。',items:['项目样件','打印实验','制作支持'],checks:'开始制作前与负责人确认材料、配置和工艺；完成后记录问题与处理方法。'},
+{id:'pi',title:'树莓派与嵌入式设备',type:'嵌入式平台',mark:'Pi',use:'在小型计算平台上，连接真实世界。',desc:'用于图像采集、边缘计算和控制实验。连接传感器与程序，让系统从桌面实验走向场景验证。',items:['视觉采集','边缘计算','控制实验'],checks:'检查供电和接口连接；操作前备份项目文件；使用结束后正常关机并归还附件。'},
+];
 ---
-
-<SiteLayout title="设备" description="大学生光电科技协会公开设备展示">
-  <section class="page-hero page-wrap">
-    <span class="page-index">04 / EQUIPMENT</span>
-    <h1>让设备，<br /><em>保持在线。</em></h1>
-    <p>这里展示协会正在使用的代表性设备。实时状态接口属于后续扩展，目前页面不暴露内部网络和设备凭据。</p>
-  </section>
-
-  <section class="page-section page-wrap">
-    <div class="section-heading"><h2>公开设备</h2><p>PUBLIC INVENTORY</p></div>
-    <div class="info-list">
-      <InfoRow index="01" title="拓竹 A1" english="BAMBU LAB A1" description="用于快速原型、结构验证和创客实践。实时使用状态接口待后续接入。" />
-      <InfoRow index="02" title="拓竹 X2D" english="BAMBU LAB X2D" description="用于更复杂的打印实验和项目制作。实时使用状态接口待后续接入。" />
-      <InfoRow index="03" title="树莓派与嵌入式设备" english="EMBEDDED DEVICES" description="用于边缘计算、视觉采集、控制实验和项目原型。" />
-    </div>
-  </section>
+<SiteLayout title="设备" description="光电科技协会的设备目录与使用说明">
+  <div class="equipment page-wrap">
+    <header class="equipment-head"><div><span>EQUIPMENT / LAB DIRECTORY</span><h1>实践的工具，<br /><em>在这里。</em></h1></div><p>了解协会的制作与计算设备。<br />选择设备，查看用途和使用前的准备。</p></header>
+    <section class="equipment-console" data-tabset aria-label="设备目录">
+      <aside><div class="inventory-label">器材目录 <small>03 / TYPES</small></div>
+        <div role="tablist" aria-label="选择设备" aria-orientation="vertical" class="machine-list">
+          {machines.map((m,i)=><button role="tab" id={'device-tab-'+m.id} aria-controls={'device-'+m.id} aria-selected={i===0?'true':'false'} tabindex={i===0?0:-1}><span class="device-index">0{i+1}</span><span><strong>{m.title}</strong><small>{m.type}</small></span><span class="pick-arrow">→</span></button>)}
+        </div>
+        <p class="directory-note">设备目录供公开了解。<br />借用及操作请联系协会负责人。</p>
+      </aside>
+      {machines.map((m,i)=><article role="tabpanel" id={'device-'+m.id} aria-labelledby={'device-tab-'+m.id} hidden={i!==0} tabindex="0" class="machine-panel">
+        <header class="machine-title"><span>{m.type}</span><span class="unavailable">实时状态未接入</span></header>
+        <div class="machine-plaque" aria-label={m.title+'设备铭牌'}>
+          <span class="plaque-no">PHOTOELECTRIC TECHNOLOGY / 0{i+1}</span>
+          <strong>{m.mark}</strong>
+          <span class="plaque-type">{m.title}</span>
+          <span class="plaque-caption">设备铭牌 · 非实物示意图</span>
+        </div>
+        <div class="machine-copy"><h2>{m.use}</h2><p>{m.desc}</p><ul>{m.items.map(v=><li>{v}</li>)}</ul>
+          <details><summary>使用前与完成后的检查 <span aria-hidden="true">+</span></summary><p>{m.checks}</p></details>
+        </div>
+      </article>)}
+    </section>
+    <div class="equipment-foot"><span>先确认任务，再选择工具。</span><p>设备运行状态暂未公开提供；当前页面不代表设备空闲、在线或可预约。</p></div>
+  </div>
 </SiteLayout>
-
+<script>import {initializeTabs} from '../components/site/tabs'; initializeTabs();</script>
 <style>
-  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
-  .info-list { border-top: 1px solid var(--site-line); }
+  .equipment{padding-bottom:4rem;}
+  .equipment-head{display:flex;justify-content:space-between;align-items:end;gap:3rem;padding:4rem 0 3rem;}
+  .equipment-head span{font:.65rem 'JetBrains Mono',monospace;letter-spacing:.14em;color:#a2b4c6;}
+  .equipment-head h1{font:500 clamp(2.5rem,5vw,4.8rem)/1.25 'Noto Serif SC',serif;margin:1.4rem 0 0;}
+  .equipment-head em{font-style:normal;color:#bdd1ca;}.equipment-head p{color:#99b0b9;line-height:1.9;font-size:.85rem;}
+  .equipment-console{display:grid;grid-template-columns:300px 1fr;border:1px solid #9ac2c333;background:linear-gradient(145deg,#21303b55,#111d2888);}
+  aside{border-right:1px solid #9ac2c333;padding:1.2rem;}
+  .inventory-label{display:flex;justify-content:space-between;padding:1rem 0;font-size:.85rem;}
+  .inventory-label small{font:.6rem monospace;color:#7b9f9b;}
+  .machine-list{display:grid;gap:.6rem;}
+  .machine-list button{display:flex;align-items:center;gap:.8rem;text-align:left;padding:1.1rem .8rem;border:1px solid transparent;background:transparent;color:#b6c8d2;cursor:pointer;}
+  .machine-list button[aria-selected=true]{border-color:#9fc8b65c;background:#86bcaa12;color:#e4f0e9;}
+  .machine-list strong,.machine-list small{display:block;}.machine-list strong{font-weight:500;font-size:.88rem;}
+  .machine-list small{font-size:.65rem;color:#78918f;margin-top:.4rem;}.device-index{font:.68rem monospace;color:#839f9b;}
+  .pick-arrow{margin-left:auto;color:#aedac5;}.directory-note{font-size:.7rem;line-height:1.9;color:#849eab;margin:2rem .8rem;}
+  button:focus-visible,summary:focus-visible,.machine-panel:focus-visible{outline:2px solid #b3d9c6;outline-offset:3px;}
+  .machine-panel:not([hidden]){display:block;padding:1.5rem 2rem;}
+  .machine-title{display:flex;justify-content:space-between;gap:1rem;color:#a4babd;font-size:.7rem;}
+  .unavailable{border:1px solid #a9b9c533;padding:.3rem .55rem;color:#94a4b5;}
+  .machine-plaque{position:relative;min-height:265px;margin:1.5rem 0 2rem;display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid #9cb3b544;background:repeating-linear-gradient(0deg,transparent 0 27px,#9ac4c309 28px),#18293655;}
+  .machine-plaque::before,.machine-plaque::after{content:'';position:absolute;width:4px;height:4px;border:1px solid #adcec3;border-radius:50%;top:12px;left:12px;}
+  .machine-plaque::after{top:auto;left:auto;bottom:12px;right:12px;}
+  .plaque-no{position:absolute;top:1rem;left:1.6rem;right:1rem;font:.53rem monospace;letter-spacing:.12em;color:#738e96;}
+  .machine-plaque strong{font:300 clamp(4rem,8vw,7rem)/1 'Outfit',sans-serif;letter-spacing:-.04em;color:#c2d8cd;}
+  .plaque-type{font-size:.8rem;margin-top:.6rem;letter-spacing:.15em;color:#92aca7;}
+  .plaque-caption{position:absolute;bottom:1rem;font-size:.58rem;color:#6b858e;}
+  .machine-copy h2{font:500 clamp(1.3rem,2.5vw,2rem)/1.5 'Noto Serif SC',serif;margin:0 0 1rem;}
+  .machine-copy p{line-height:1.9;font-size:.85rem;color:#a4b6c6;}
+  .machine-copy ul{display:flex;flex-wrap:wrap;gap:1rem;padding:0;list-style:none;margin:1.5rem 0;font:.7rem 'Noto Sans SC',sans-serif;color:#b9d3c8;}
+  .machine-copy li::before{content:'·';margin-right:.5rem;}
+  details{border-top:1px solid #9ac2c333;margin-top:2rem;padding-top:1rem;}
+  summary{font-size:.8rem;cursor:pointer;color:#c3d6dd;} summary span{float:right;} details[open] summary span{transform:rotate(45deg);}
+  .equipment-foot{display:flex;justify-content:space-between;gap:2rem;border-bottom:1px solid #9ac2c322;padding:2rem 0;font-size:.8rem;}
+  .equipment-foot>span{color:#afc8c1;}.equipment-foot p{color:#809aa8;max-width:440px;margin:0;line-height:1.8;font-size:.75rem;}
+  @media(max-width:800px){.equipment-console{grid-template-columns:1fr;}aside{border-right:0;border-bottom:1px solid #9ac2c333;}.machine-list{grid-template-columns:repeat(3,1fr);}.machine-list button{display:block;padding:.8rem .5rem;}.device-index,.pick-arrow,.directory-note{display:none;}.equipment-head{align-items:start;flex-direction:column;gap:1rem;padding-top:2.5rem;}.machine-panel:not([hidden]){padding:1.25rem;}.equipment-foot{flex-direction:column;gap:.8rem;}.machine-title{align-items:center;}}
 </style>

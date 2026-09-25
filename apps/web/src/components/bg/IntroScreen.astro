@@ -8,8 +8,7 @@
  *   - 中央大字逐字符入场（type: spring）
  *   - 单个 CTA 按钮 · 玻璃拟态
  *
- * 播放完毕后淡出 → 显示主页
- * sessionStorage 记住已看过，避免每次刷新都重播
+ * 单一粒子轨道常驻。点击后：融入流线 → 四散 → 显示主页。
  */
 
 interface Props {
@@ -17,11 +16,7 @@ interface Props {
   duration?: number; // 播放时长（毫秒）
 }
 const { title = '光电科技', duration = 4200 } = Astro.props;
-import LogoParticleStage from '../site/LogoParticleStage.astro';
-
-const baseRaw = import.meta.env.BASE_URL;
-const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
-const logoSrc = `${base}logo.jpg`;
+import OrbitParticles from './OrbitParticles.astro';
 
 // 前端渲染 36 条 path · 与背景提示词.txt 公式完全一致
 const positions = [1, -1] as const;
@@ -43,7 +38,7 @@ const pathsData = positions.flatMap((position) =>
 ---
 
 <div id="intro-screen" class="intro" data-duration={duration}>
-  <LogoParticleStage logoSrc={logoSrc} controls={false} autoSequence particleCount={600} />
+  <OrbitParticles />
   <!-- 两组 SVG · 一正一反 -->
   <svg class="intro-paths" viewBox="0 0 696 316" fill="none" aria-hidden="true">
     <title>Background Paths</title>
@@ -114,6 +109,9 @@ const pathsData = positions.flatMap((position) =>
     visibility: hidden;
     pointer-events: none;
   }
+  .intro.merging .intro-content { opacity: .3; transition:opacity .6s; }
+  .intro.merging .intro-paths { color:#a2d8ef; transition:color .6s; }
+  .intro.leaving { background:transparent; transition:background-color 1.2s ease,opacity .7s ease,visibility .7s ease; }
 
   /* 点击进入后的视觉交接：流线向中心收束，主页电路在其后接管画面。 */
   .intro::after {
@@ -149,7 +147,7 @@ const pathsData = positions.flatMap((position) =>
       filter 0.8s ease;
   }
   .intro.leaving .intro-paths {
-    transform: scale(0.72);
+    transform: scale(1.35);
     opacity: 0;
     filter: blur(5px);
   }
@@ -307,6 +305,10 @@ const pathsData = positions.flatMap((position) =>
 
   /* 减动效偏好：字符不做入场跳变，但整体保留（不用 display:none 因为想让 preview 也能看到） */
   @media (prefers-reduced-motion: reduce) {
+    .intro-paths path { animation: none !important; }
+    .intro.leaving::after { animation: none; }
+    .intro.leaving .intro-paths { transform:none; filter:none; }
+    .intro.leaving .intro-content { transform:none; filter:none; }
     .intro-char { animation: none !important; opacity: 1; transform: none; }
     .intro-sub, .intro-skip, .intro-progress { animation: none !important; opacity: 1; }
   }
@@ -349,21 +351,30 @@ const pathsData = positions.flatMap((position) =>
       if (isLeaving) return;
       isLeaving = true;
       cancelAnimationFrame(raf);
-      intro!.classList.add('leaving');
+      skip!.setAttribute('disabled', '');
+      intro!.classList.add('merging');
       window.dispatchEvent(new CustomEvent('pec:intro-exit'));
 
-      // 先完成流线收束，再淡出开屏，主页背景会在同一时间轴内接管。
-      setTimeout(() => intro!.classList.add('done'), 720);
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // 先沿真实路径融合并短暂运行，再散开；结束时间覆盖整个散开动画。
+      setTimeout(() => {
+        intro!.classList.remove('merging');
+        intro!.classList.add('leaving');
+        window.dispatchEvent(new CustomEvent('pec:intro-scatter'));
+      }, reduced ? 0 : 1200);
+      setTimeout(() => intro!.classList.add('done'), reduced ? 0 : 2100);
       setTimeout(() => {
         intro!.remove();
         window.dispatchEvent(new CustomEvent('pec:intro-entered'));
-      }, 1500);
+      }, reduced ? 100 : 2850);
     }
 
     skip.addEventListener('click', finish);
     // ESC 键也可跳过
-    document.addEventListener('keydown', (e) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') finish();
-    }, { once: true });
+    };
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('pec:intro-entered', () => document.removeEventListener('keydown', onKey), { once:true });
   }
 </script>

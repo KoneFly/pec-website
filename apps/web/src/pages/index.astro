@@ -1,6 +1,7 @@
 ---
 import CircuitFlow from '../components/bg/CircuitFlow.astro';
 import IntroScreen from '../components/bg/IntroScreen.astro';
+import CurrentMetrics from '../components/site/CurrentMetrics.astro';
 
 // base URL 处理：dev 时 BASE_URL='/'，prod 时 BASE_URL='/pec-website'（末尾无斜杠）
 // 统一拼成末尾带斜杠，再拼资源路径
@@ -10,7 +11,7 @@ const logoSrc = `${BASE}logo.jpg`;
 const faviconSrc = `${BASE}favicon.svg`;
 const route = (path: string) => `${BASE}${path.replace(/^\/+/, '')}`;
 /**
- * 变体 V4：Sui-IB 深蓝夜色氛围版
+ * 光电科技协会正式首页
  * ---
  * DNA（从真实参考站扒来 · 不是浮浮酱瞎造）：
  *  - Sui-IB InternalBeyond 的 rgb(24,30,50) 深蓝夜色
@@ -24,11 +25,15 @@ const route = (path: string) => `${BASE}${path.replace(/^\/+/, '')}`;
  * 反 slop 检查: 无紫渐变 · 无 emoji · 无 GPU 粒子 · 无青紫霓虹撞衫
  */
 ---
-<html lang="zh-CN" data-variant="v4-nightsky">
+<html lang="zh-CN" data-theme="night-circuit">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>V4 · 深蓝夜色氛围 - 光电科技</title>
+    <meta name="description" content="大学生光电科技协会官方网站，展示协会方向、项目、设备与招新信息。" />
+    <meta property="og:title" content="光电科技｜大学生光电科技协会" />
+    <meta property="og:description" content="用光与电，编写未来的可能。" />
+    <meta property="og:type" content="website" />
+    <title>光电科技｜大学生光电科技协会</title>
     <link rel="icon" type="image/svg+xml" href={faviconSrc} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -805,28 +810,7 @@ const route = (path: string) => `${BASE}${path.replace(/^\/+/, '')}`;
     </section>
 
     <!-- Stats -->
-    <section class="stats">
-      <div class="stat-cell">
-        <div class="stat-num" data-count="80">0<sup>+</sup></div>
-        <div class="stat-label">Members</div>
-        <div class="stat-label-cn">活跃成员</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num" data-count="175">0</div>
-        <div class="stat-label">National</div>
-        <div class="stat-label-cn">国家级奖项</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num" data-count="182">0</div>
-        <div class="stat-label">Provincial</div>
-        <div class="stat-label-cn">省级奖项</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">2016</div>
-        <div class="stat-label">Founded</div>
-        <div class="stat-label-cn">创立年份</div>
-      </div>
-    </section>
+    <CurrentMetrics />
 
     <!-- 精神 -->
     <section class="manifesto">

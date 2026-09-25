@@ -1,41 +1,84 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
-import InfoRow from '../components/site/InfoRow.astro';
-import MonochromeParticles from '../components/site/MonochromeParticles.astro';
+const fields = [
+  {id:'embedded',name:'嵌入式开发',en:'EMBEDDED SYSTEMS',lead:'让硬件响应每一行代码。',body:'在电路接口、时序与程序之间建立可靠的连接。关注数据如何进入系统，指令如何转化为可验证的动作。',tags:['MCU','嵌入式 Linux','接口与时序'],steps:['信号采集','固件逻辑','控制输出'],deliverable:'控制程序 · 接口说明 · 联调记录'},
+  {id:'vision',name:'计算机视觉',en:'COMPUTER VISION',lead:'从像素到理解，再到行动。',body:'围绕图像采集、目标识别和视觉反馈组织实验。记录环境、数据和算法结果，让每次改进可以比较和复现。',tags:['图像采集','目标识别','视觉反馈'],steps:['输入图像','特征识别','结果反馈'],deliverable:'数据样例 · 识别程序 · 测试结果'},
+  {id:'robotics',name:'机器人操作',en:'ROBOTICS & CONTROL',lead:'把感知和控制连成闭环。',body:'连接传感器、运动控制与任务逻辑，在真实环境里验证系统。让机械、电路与算法为同一个任务协作。',tags:['运动控制','传感器','任务规划'],steps:['环境感知','任务决策','运动执行'],deliverable:'任务流程 · 控制逻辑 · 现场验证'},
+  {id:'maker',name:'创客实践',en:'MAKER & PROTOTYPING',lead:'让构想获得尺寸和形状。',body:'通过结构设计、3D 打印和装配测试推进原型。把迭代过程留在图纸与记录中，让作品经得起实际使用。',tags:['结构设计','3D 打印','装配测试'],steps:['建模设计','样件制作','装配迭代'],deliverable:'模型图纸 · 样件 · 装配记录'},
+];
+const base=import.meta.env.BASE_URL.replace(/\/?$/,'/');
 ---
-
-<SiteLayout title="项目" description="大学生光电科技协会的实践方向与项目展示">
-  <section class="page-hero page-wrap">
-    <span class="page-index">02 / PRACTICE</span>
-    <h1>把想法，<br /><em>做成现实。</em></h1>
-    <p>从一块控制板到一套完整系统，从第一次调试到赛场验证，项目是我们学习和交流的共同载体。</p>
-  </section>
-
-  <section class="page-section page-wrap">
-    <div class="section-heading"><h2>实践方向</h2><p>FOUR FIELDS</p></div>
-    <div class="info-list">
-      <InfoRow index="01" title="嵌入式开发" english="EMBEDDED SYSTEMS" description="以单片机、嵌入式 Linux 和控制系统为基础，完成从电路接口到软件逻辑的闭环。" />
-      <InfoRow index="02" title="计算机视觉" english="COMPUTER VISION" description="围绕图像采集、目标识别和视觉反馈建立可运行、可验证的算法系统。" />
-      <InfoRow index="03" title="机器人操作" english="ROBOTICS & CONTROL" description="将传感器、运动控制和任务逻辑结合，关注系统在真实环境中的稳定运行。" />
-      <InfoRow index="04" title="创客实践" english="MAKER & PROTOTYPING" description="通过 3D 打印、结构设计和快速原型，把概念推进到可以测试的实物。" />
-    </div>
-  </section>
-
-  <section class="page-section project-note">
-    <MonochromeParticles />
-    <div class="page-wrap project-note-inner">
-      <span class="page-index">PROJECT ARCHIVE</span>
-      <h2>项目资料正在持续整理。</h2>
-      <p>后续将按项目补充照片、技术栈、竞赛成果和成员记录。</p>
-    </div>
-  </section>
+<SiteLayout title="项目" description="光电科技协会的实践方向与研究档案">
+  <div class="research">
+    <header class="research-head page-wrap">
+      <div class="edition">RESEARCH / FIELD NOTES <span>01 — 04</span></div>
+      <h1>想法的下一步，<br /><em>是实践。</em></h1>
+      <p>观察、搭建、验证、再迭代。<br />在四个实践方向里，找到你想解决的问题。</p>
+    </header>
+    <section class="research-desk page-wrap" data-tabset aria-label="实践方向档案">
+      <div role="tablist" aria-label="选择实践方向" class="field-tabs">
+        {fields.map((f,i)=><button role="tab" id={'tab-'+f.id} aria-controls={'panel-'+f.id} aria-selected={i===0?'true':'false'} tabindex={i===0?0:-1}><small>0{i+1}</small>{f.name}<span>↗</span></button>)}
+      </div>
+      {fields.map((f,i)=><article id={'panel-'+f.id} role="tabpanel" aria-labelledby={'tab-'+f.id} hidden={i!==0} tabindex="0" class="research-panel">
+        <div class="study-visual" data-kind={f.id}>
+          <span class="diagram-label">FIG. 0{i+1} / 工作流程示意</span>
+          <div class="flow-diagram" aria-label={f.steps.join(' → ')}>
+            {f.steps.map((step,n)=><div><span class="flow-port">0{n+1}</span><strong>{step}</strong>{n<2&&<span class="flow-arrow" aria-hidden="true">↓</span>}</div>)}
+          </div>
+          <span class="diagram-foot">{f.en}</span>
+        </div>
+        <div class="study-copy">
+          <span class="field-number">FIELD / 0{i+1}</span><h2>{f.lead}</h2><p>{f.body}</p>
+          <ul class="tags">{f.tags.map(tag=><li>{tag}</li>)}</ul>
+          <dl><dt>可以留下什么</dt><dd>{f.deliverable}</dd></dl>
+        </div>
+      </article>)}
+    </section>
+    <section class="archive-note page-wrap">
+      <span>PROJECT ARCHIVE</span><div><h2>每个成果，都值得记录。</h2><p>项目档案正在整理。后续将公开真实作品、实验记录与竞赛成果。</p></div>
+      <a href={base+'recruit/'}>参与下一次实践 <span aria-hidden="true">↗</span></a>
+    </section>
+  </div>
 </SiteLayout>
-
+<script>import {initializeTabs} from '../components/site/tabs'; initializeTabs();</script>
 <style>
-  .page-hero em { color: var(--site-blue-hi); font-style: normal; }
-  .info-list { border-top: 1px solid var(--site-line); }
-  .project-note { position: relative; overflow: hidden; background: #131416; }
-  .project-note-inner { position: relative; z-index: 1; min-height: 28vh; display: grid; align-content: center; }
-  .project-note h2 { margin: 1rem 0 0.6rem; font: 500 clamp(1.8rem, 4vw, 3rem) 'Noto Serif SC', serif; }
-  .project-note p { margin: 0; color: var(--site-muted); }
+  .research{background:#e8eae7;color:#192b33;padding-bottom:5rem;}
+  .research-head{padding-block:4rem 3rem;position:relative;}
+  .edition{font: .72rem 'Outfit',sans-serif;letter-spacing:.18em;border-bottom:1px solid #213b4333;padding-bottom:1rem;display:flex;justify-content:space-between;}
+  .research h1{font:500 clamp(2.6rem,6vw,5.7rem)/1.2 'Noto Serif SC',serif;letter-spacing:-.05em;margin:2.5rem 0 1.5rem;}
+  .research h1 em{color:#286585;font-style:normal;}
+  .research-head p{color:#50626a;line-height:1.9;}
+  .field-tabs{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #213b4355;}
+  .field-tabs button{display:flex;gap:.6rem;align-items:center;padding:1.25rem .9rem;background:transparent;border:0;border-right:1px solid #213b4333;font-size:.85rem;cursor:pointer;color:inherit;text-align:left;}
+  .field-tabs button:last-child{border-right:0;}
+  .field-tabs small{color:#697f86;font: .65rem monospace;}
+  .field-tabs button>span{margin-left:auto;}
+  .field-tabs button[aria-selected=true]{background:#193c4a;color:#eef6f8;}
+  .field-tabs button[aria-selected=true] small{color:#a4cddd;}
+  button:focus-visible,a:focus-visible,.research-panel:focus-visible{outline:2px solid #267da6;outline-offset:4px;}
+  .research-panel:not([hidden]){display:grid;grid-template-columns:1fr 1fr;min-height:490px;border:1px solid #213b4333;border-top:0;}
+  .study-visual{position:relative;display:grid;align-content:center;padding:4rem 3rem;background:linear-gradient(#527b8714 1px,transparent 1px),linear-gradient(90deg,#527b8714 1px,transparent 1px),#dbe2df;background-size:24px 24px;}
+  .diagram-label,.diagram-foot{position:absolute;left:1.3rem;font: .62rem 'JetBrains Mono',monospace;color:#486670;letter-spacing:.1em;}
+  .diagram-label{top:1.3rem;}.diagram-foot{bottom:1.3rem;}
+  .flow-diagram{max-width:240px;width:100%;margin:auto;}
+  .flow-diagram>div{position:relative;display:flex;align-items:center;gap:1rem;border:1px solid #36748a77;padding:1rem;margin:1.7rem 0;background:#eaf0ebd9;}
+  .flow-port{font:.7rem monospace;color:#4b7b8b;}.flow-diagram strong{font-weight:500;font-size:.9rem;}
+  .flow-arrow{position:absolute;bottom:-1.55rem;left:50%;color:#2b6c87;}
+  [data-kind=vision] .flow-diagram>div{border-style:dashed;}
+  [data-kind=robotics] .flow-diagram{border-left:2px solid #5b879b;padding-left:1.5rem;}
+  [data-kind=maker] .flow-diagram>div{box-shadow:5px 5px 0 #9aaea855;}
+  .study-copy{padding:3rem;align-self:center;}
+  .field-number{font:.65rem 'JetBrains Mono',monospace;color:#56717c;}
+  .study-copy h2{font:500 clamp(1.8rem,3vw,2.7rem)/1.45 'Noto Serif SC',serif;margin:1.2rem 0;}
+  .study-copy p,.archive-note p{line-height:1.9;color:#50626a;}
+  .tags{padding:0;display:flex;flex-wrap:wrap;gap:.5rem;list-style:none;margin:1.5rem 0;}
+  .tags li{font-size:.72rem;padding:.3rem .55rem;border:1px solid #31536333;}
+  .study-copy dl{border-top:1px solid #31536333;padding-top:1.3rem;font-size:.8rem;}
+  .study-copy dt{color:#667c84;margin-bottom:.5rem;}.study-copy dd{margin:0;}
+  .archive-note{display:grid;grid-template-columns:.65fr 2fr 1fr;gap:2rem;margin-top:3rem;padding-top:2rem;border-top:1px solid #31536333;}
+  .archive-note>span{font:.65rem monospace;color:#56717c;}
+  .archive-note h2{font:500 1.4rem 'Noto Serif SC',serif;margin:0;}
+  .archive-note p{font-size:.8rem;}.archive-note a{align-self:center;color:#286585;text-decoration:none;border-bottom:1px solid;padding:.6rem 0;font-size:.8rem;}
+  .archive-note a span{float:right;}
+  @media(max-width:700px){.research-panel:not([hidden]){grid-template-columns:1fr;}.field-tabs{grid-template-columns:1fr 1fr;}.field-tabs button{border-bottom:1px solid #213b4333;}.study-visual{min-height:380px;padding:3rem 2rem;}.study-copy{padding:2rem 1.5rem;}.archive-note{grid-template-columns:1fr;gap:1rem;}.research-head{padding-top:2.5rem;}}
 </style>
